@@ -9,7 +9,6 @@
 package io.element.android.features.preferences.impl.about
 
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
-import kotlinx.collections.immutable.toImmutableList
 
 open class AboutStatePreviewParam : PreviewParameterProvider<AboutState> {
     override val values: Sequence<AboutState>
@@ -18,8 +17,4 @@ open class AboutStatePreviewParam : PreviewParameterProvider<AboutState> {
         )
 }
 
-fun anAboutState(
-    elementLegals: List<ElementLegal> = getAllLegals(),
-) = AboutState(
-    elementLegals = elementLegals.toImmutableList(),
-)
+fun anAboutState() = AboutState()

@@ -221,19 +221,17 @@ class PreferencesRootViewTest : RobolectricTest() {
     }
 
     @Test
-    fun `click on Report a problem invokes the expected callback`() = runAndroidComposeUiTest {
-        val eventsRecorder = EventsRecorder<PreferencesRootEvent>(expectEvents = false)
-        ensureCalledOnce { callback ->
-            setView(
-                aPreferencesRootState(
-                    canReportBug = true,
-                    eventSink = eventsRecorder,
-                ),
-                onOpenRageShake = callback,
-            )
-            val text = activity!!.getString(CommonStrings.common_report_a_problem)
-            onNode(hasText(text) and hasClickAction()).performScrollTo().performClick()
-        }
+    fun `click on Report a problem sends the stub event`() = runAndroidComposeUiTest {
+        val eventsRecorder = EventsRecorder<PreferencesRootEvent>()
+        setView(
+            aPreferencesRootState(
+                canReportBug = true,
+                eventSink = eventsRecorder,
+            ),
+        )
+        val text = activity!!.getString(CommonStrings.common_report_a_problem)
+        onNode(hasText(text) and hasClickAction()).performScrollTo().performClick()
+        eventsRecorder.assertSingle(PreferencesRootEvent.OnReportProblemStub)
     }
 
     @Test
@@ -452,7 +450,6 @@ private fun AndroidComposeUiTest<ComponentActivity>.setView(
     onManageAccountClick: (url: String) -> Unit = EnsureNeverCalledWithParam(),
     onLinkNewDeviceClick: () -> Unit = EnsureNeverCalled(),
     onOpenAnalytics: () -> Unit = EnsureNeverCalled(),
-    onOpenRageShake: () -> Unit = EnsureNeverCalled(),
     onOpenLockScreenSettings: () -> Unit = EnsureNeverCalled(),
     onOpenAbout: () -> Unit = EnsureNeverCalled(),
     onOpenDeveloperSettings: () -> Unit = EnsureNeverCalled(),
@@ -474,7 +471,6 @@ private fun AndroidComposeUiTest<ComponentActivity>.setView(
             onManageAccountClick = onManageAccountClick,
             onLinkNewDeviceClick = onLinkNewDeviceClick,
             onOpenAnalytics = onOpenAnalytics,
-            onOpenRageShake = onOpenRageShake,
             onOpenLockScreenSettings = onOpenLockScreenSettings,
             onOpenAbout = onOpenAbout,
             onOpenDeveloperSettings = onOpenDeveloperSettings,

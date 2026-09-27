@@ -92,6 +92,14 @@ fun AdvancedSettingsView(
                 state.eventSink(AdvancedSettingsEvent.SetTheme(themeOption))
             }
         )
+        PreferenceDropdown(
+            title = stringResource(id = R.string.vavsta_accent_color_title),
+            selectedOption = state.accent,
+            options = state.availableAccentOptions,
+            onSelectOption = { accentOption ->
+                state.eventSink(AdvancedSettingsEvent.SetAccent(accentOption))
+            }
+        )
         ListItem(
             content = {
                 Text(text = stringResource(id = CommonStrings.action_view_source))

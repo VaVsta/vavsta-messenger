@@ -27,7 +27,6 @@ class DefaultVersionFormatter(
         return stringProvider.getString(
             CommonStrings.settings_version_number,
             buildMeta.versionName,
-            buildMeta.versionCode.toString()
         )
     }
 }

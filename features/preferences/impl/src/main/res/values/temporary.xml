@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ VaVsta Messenger — выбоб цвета акцента.
+  ~ Форк: строки добавляем только сюда, элементский localazy не трогаем.
+  -->
+<resources>
+    <string name="vavsta_accent_color_title">Accent color</string>
+    <string name="vavsta_accent_neon">Neon</string>
+    <string name="vavsta_accent_cyan">Cyan</string>
+    <string name="vavsta_accent_green">Green</string>
+    <string name="vavsta_accent_purple">Purple</string>
+    <string name="vavsta_accent_orange">Orange</string>
+    <string name="vavsta_report_problem_stub">Функция пока недоступна</string>
+</resources>

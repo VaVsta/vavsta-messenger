@@ -22,6 +22,8 @@ data class AdvancedSettingsState(
     val mediaOptimizationState: MediaOptimizationState?,
     val theme: ThemeOption,
     val availableThemeOptions: ImmutableList<ThemeOption>,
+    val accent: AccentOption,
+    val availableAccentOptions: ImmutableList<AccentOption>,
     val mediaPreviewConfigState: MediaPreviewConfigState,
     val liveLocationMinimumDistanceUpdate: Int?,
     val eventSink: (AdvancedSettingsEvent) -> Unit
@@ -63,5 +65,38 @@ enum class ThemeOption : DropdownOption {
         @Composable
         @ReadOnlyComposable
         override fun getText(): String = stringResource(R.string.theme_black)
+    }
+}
+
+/** Цветовые акценты VaVsta. */
+enum class AccentOption : DropdownOption {
+    Neon {
+        @Composable
+        @ReadOnlyComposable
+        override fun getText(): String = stringResource(R.string.vavsta_accent_neon)
+    },
+
+    Cyan {
+        @Composable
+        @ReadOnlyComposable
+        override fun getText(): String = stringResource(R.string.vavsta_accent_cyan)
+    },
+
+    Green {
+        @Composable
+        @ReadOnlyComposable
+        override fun getText(): String = stringResource(R.string.vavsta_accent_green)
+    },
+
+    Purple {
+        @Composable
+        @ReadOnlyComposable
+        override fun getText(): String = stringResource(R.string.vavsta_accent_purple)
+    },
+
+    Orange {
+        @Composable
+        @ReadOnlyComposable
+        override fun getText(): String = stringResource(R.string.vavsta_accent_orange)
     }
 }

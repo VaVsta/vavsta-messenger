@@ -1,5 +1,6 @@
 import config.BuildTimeConfig
 import extension.buildConfigFieldStr
+import extension.readLocalProperty
 import extension.setupDependencyInjection
 import extension.testCommonDependencies
 
@@ -41,6 +42,13 @@ android {
             name = "URL_PRIVACY",
             value = BuildTimeConfig.URL_PRIVACY ?: "https://element.io/privacy",
         )
+        buildConfigFieldStr(
+            name = "UPDATE_BASE_URL",
+            // local.properties в .gitignore, поэтому без дефолта свежий клон собрался бы
+            // с пустым URL и OTA молча выключился. Переопределяется через vavsta.update_url.
+            value = readLocalProperty("vavsta.update_url")
+                ?: "https://chat.vavsta.ru/vavsta-messenger/version.json",
+        )
     }
 }
 
@@ -48,6 +56,7 @@ setupDependencyInjection()
 
 dependencies {
     implementation(projects.libraries.androidutils)
+    implementation(projects.libraries.di)
     implementation(projects.appconfig)
     implementation(projects.libraries.core)
     implementation(projects.libraries.architecture)
@@ -98,6 +107,9 @@ dependencies {
 
     implementation(platform(libs.network.okhttp.bom))
     implementation(libs.network.okhttp)
+
+    // FileProvider для установки скачанного APK
+    implementation(libs.androidx.core)
 
     testCommonDependencies(libs, true)
     testImplementation(projects.libraries.matrix.test)

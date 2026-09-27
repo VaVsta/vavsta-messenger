@@ -10,24 +10,19 @@ package io.element.android.features.preferences.impl.developer.appsettings
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import io.element.android.compound.theme.ElementTheme
-import io.element.android.features.preferences.impl.R
 import io.element.android.features.preferences.impl.developer.tracing.LogLevelItem
-import io.element.android.features.rageshake.api.preferences.RageshakePreferencesView
 import io.element.android.libraries.androidutils.system.copyToClipboard
 import io.element.android.libraries.designsystem.components.preferences.PreferenceCategory
 import io.element.android.libraries.designsystem.components.preferences.PreferenceDropdown
 import io.element.android.libraries.designsystem.components.preferences.PreferenceSwitch
-import io.element.android.libraries.designsystem.components.preferences.PreferenceTextField
 import io.element.android.libraries.designsystem.preview.ElementPreview
 import io.element.android.libraries.designsystem.preview.PreviewsDayNight
 import io.element.android.libraries.designsystem.theme.components.ListItem
@@ -42,7 +37,6 @@ import kotlinx.collections.immutable.toImmutableList
 @Composable
 fun AppDeveloperSettingsView(
     state: AppDeveloperSettingsState,
-    onOpenShowkase: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -55,7 +49,6 @@ fun AppDeveloperSettingsView(
         ) {
             FeatureListContent(state)
         }
-        ElementCallCategory(state = state)
         PreferenceCategory(title = "Rust SDK") {
             PreferenceDropdown(
                 title = "Tracing log level",
@@ -82,17 +75,6 @@ fun AppDeveloperSettingsView(
                 )
             }
         }
-        PreferenceCategory(title = "Showkase") {
-            ListItem(
-                content = {
-                    Text("Open Showkase browser")
-                },
-                onClick = onOpenShowkase
-            )
-        }
-        RageshakePreferencesView(
-            state = state.rageshakeState,
-        )
         PreferenceCategory(title = "Crash") {
             ListItem(
                 content = {
@@ -140,32 +122,6 @@ private fun GitCategory(
 }
 
 @Composable
-private fun ElementCallCategory(
-    state: AppDeveloperSettingsState,
-) {
-    PreferenceCategory(title = "Element Call") {
-        val callUrlState = state.customElementCallBaseUrlState
-
-        val supportingText = if (callUrlState.baseUrl.isNullOrEmpty()) {
-            stringResource(R.string.screen_advanced_settings_element_call_base_url_description)
-        } else {
-            callUrlState.baseUrl
-        }
-        PreferenceTextField(
-            headline = stringResource(R.string.screen_advanced_settings_element_call_base_url),
-            value = callUrlState.baseUrl,
-            placeholder = "https://.../room",
-            supportingText = supportingText,
-            validation = callUrlState.validator,
-            onValidationErrorMessage = stringResource(R.string.screen_advanced_settings_element_call_base_url_validation_error),
-            displayValue = { value -> !value.isNullOrEmpty() },
-            keyboardOptions = KeyboardOptions.Default.copy(autoCorrectEnabled = false, keyboardType = KeyboardType.Uri),
-            onChange = { state.eventSink(AppDeveloperSettingsEvent.SetCustomElementCallBaseUrl(it)) }
-        )
-    }
-}
-
-@Composable
 private fun FeatureListContent(
     state: AppDeveloperSettingsState,
 ) {
@@ -186,6 +142,5 @@ internal fun AppDeveloperSettingsViewPreview(
 ) = ElementPreview {
     AppDeveloperSettingsView(
         state = state,
-        onOpenShowkase = {},
     )
 }

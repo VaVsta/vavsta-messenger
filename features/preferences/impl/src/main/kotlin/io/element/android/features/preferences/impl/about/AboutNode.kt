@@ -9,6 +9,8 @@
 package io.element.android.features.preferences.impl.about
 
 import android.app.Activity
+import android.content.Intent
+import android.net.Uri
 import androidx.activity.compose.LocalActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -36,12 +38,24 @@ class AboutNode(
 
     private val callback: Callback = callback()
 
-    private fun onElementLegalClick(
+    private fun onOpenUrl(
         activity: Activity,
         darkTheme: Boolean,
-        elementLegal: ElementLegal,
+        url: String,
     ) {
-        activity.openUrlInChromeCustomTab(null, darkTheme, elementLegal.url)
+        if (url.startsWith("tg://")) {
+            val tgUri = Uri.parse(url)
+            // Открываем диалог в самом Telegram; если приложение не установлено — фолбэк на веб.
+            val opened = runCatching {
+                activity.startActivity(Intent(Intent.ACTION_VIEW, tgUri))
+            }.isSuccess
+            if (!opened && url.contains("domain=")) {
+                val domain = url.substringAfter("domain=")
+                activity.openUrlInChromeCustomTab(null, darkTheme, "https://t.me/$domain")
+            }
+        } else {
+            activity.openUrlInChromeCustomTab(null, darkTheme, url)
+        }
     }
 
     @Composable
@@ -52,8 +66,8 @@ class AboutNode(
         AboutView(
             state = state,
             onBackClick = ::navigateUp,
-            onElementLegalClick = { elementLegal ->
-                onElementLegalClick(activity, isDark, elementLegal)
+            onOpenUrl = { url ->
+                onOpenUrl(activity, isDark, url)
             },
             onOpenSourceLicensesClick = callback::navigateToOssLicenses,
             modifier = modifier

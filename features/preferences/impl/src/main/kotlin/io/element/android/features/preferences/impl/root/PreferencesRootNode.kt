@@ -81,7 +81,6 @@ class PreferencesRootNode(
             modifier = modifier,
             onBackClick = this::navigateUp,
             onAddAccountClick = callback::navigateToAddAccount,
-            onOpenRageShake = callback::navigateToBugReport,
             onOpenAnalytics = callback::navigateToAnalyticsSettings,
             onOpenAbout = callback::navigateToAbout,
             onSecureBackupClick = callback::navigateToSecureBackup,

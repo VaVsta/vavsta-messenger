@@ -18,6 +18,7 @@ sealed interface AdvancedSettingsEvent {
     data class SetCompressImages(val compress: Boolean) : AdvancedSettingsEvent
     data class SetVideoUploadQuality(val videoPreset: VideoCompressionPreset) : AdvancedSettingsEvent
     data class SetTheme(val theme: ThemeOption) : AdvancedSettingsEvent
+    data class SetAccent(val accent: AccentOption) : AdvancedSettingsEvent
     data class SetTimelineMediaPreviewValue(val value: MediaPreviewValue) : AdvancedSettingsEvent
     data class SetHideInviteAvatars(val value: Boolean) : AdvancedSettingsEvent
     data class SetLiveLocationMinimumDistanceUpdate(val value: Int) : AdvancedSettingsEvent

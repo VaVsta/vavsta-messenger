@@ -82,6 +82,14 @@ class AdvancedSettingsPresenter(
             }.toImmutableList()
         }
 
+        val accentName by appPreferencesStore.accentColorFlow().collectAsState(initial = null)
+        val accentOption by remember {
+            derivedStateOf {
+                AccentOption.entries.firstOrNull { it.name == accentName } ?: AccentOption.Neon
+            }
+        }
+        val availableAccentOptions = remember { AccentOption.entries.toImmutableList() }
+
         val mediaOptimizationState by produceState<MediaOptimizationState?>(null) {
             val hasSplitMediaQualityOptionsFlow = featureFlagService.isFeatureEnabledFlow(FeatureFlags.SelectableMediaQuality)
             combine(
@@ -119,6 +127,9 @@ class AdvancedSettingsPresenter(
                         ThemeOption.Light -> appPreferencesStore.setTheme(Theme.Light.name)
                     }
                 }
+                is AdvancedSettingsEvent.SetAccent -> sessionCoroutineScope.launch {
+                    appPreferencesStore.setAccentColor(event.accent.name)
+                }
                 is AdvancedSettingsEvent.SetHideInviteAvatars -> mediaPreviewConfigStateStore.setHideInviteAvatars(event.value)
                 is AdvancedSettingsEvent.SetTimelineMediaPreviewValue -> mediaPreviewConfigStateStore.setTimelineMediaPreviewValue(event.value)
                 is AdvancedSettingsEvent.SetLiveLocationMinimumDistanceUpdate -> sessionCoroutineScope.launch {
@@ -139,6 +150,8 @@ class AdvancedSettingsPresenter(
             mediaOptimizationState = mediaOptimizationState,
             theme = themeOption,
             availableThemeOptions = availableThemeOptions,
+            accent = accentOption,
+            availableAccentOptions = availableAccentOptions,
             mediaPreviewConfigState = mediaPreviewConfigState,
             liveLocationMinimumDistanceUpdate = liveLocationMinimumDistanceUpdate,
             eventSink = ::handleEvent,

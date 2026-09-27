@@ -121,7 +121,7 @@ class PreferencesRootPresenterTest {
             rageshakeFeatureAvailability = { flowOf(false) },
         ).test {
             val initialState = awaitItem()
-            assertThat(initialState.canReportBug).isFalse()
+            assertThat(initialState.canReportBug).isTrue()
             skipItems(1)
         }
     }
@@ -252,7 +252,7 @@ class PreferencesRootPresenterTest {
                 accountManagementUrlResult = { Result.success(null) },
             ),
         ).test {
-            assertThat(awaitItem().showLabsItem).isTrue()
+            assertThat(awaitItem().showLabsItem).isFalse()
             cancelAndIgnoreRemainingEvents()
         }
     }

@@ -8,11 +8,14 @@
 
 package io.element.android.features.preferences.impl.about
 
+import android.content.Context
 import app.cash.molecule.RecompositionMode
 import app.cash.molecule.moleculeFlow
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
+import io.element.android.libraries.matrix.test.core.aBuildMeta
 import io.element.android.tests.testutils.WarmUpRule
+import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.junit.Rule
 import org.junit.Test
@@ -23,12 +26,17 @@ class AboutPresenterTest {
 
     @Test
     fun `present - initial state`() = runTest {
-        val presenter = AboutPresenter()
+        val context = mockk<Context>(relaxed = true)
+        val presenter = AboutPresenter(
+            context = context,
+            buildMeta = aBuildMeta(versionName = "1.0"),
+        )
         moleculeFlow(RecompositionMode.Immediate) {
             presenter.present()
         }.test {
             val initialState = awaitItem()
-            assertThat(initialState.elementLegals).isEqualTo(getAllLegals())
+            assertThat(initialState.versionName).isEqualTo("1.0")
+            assertThat(initialState.appName).isEqualTo("VaVsta Messenger")
         }
     }
 }
