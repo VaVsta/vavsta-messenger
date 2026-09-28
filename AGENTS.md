@@ -121,3 +121,43 @@ We wrap the `matrix-rust-sdk` to isolate the UI from the underlying SDK.
 - Naming: SDK `Room` → `JoinedRoom` or `RoomInfo`.
 - Type Mapping: Map Rust SDK types to Kotlin data classes in the `api` module to avoid leaking `MatrixRustSDK` into the UI.
 - Always follow Kotlin naming conventions (e.g., `userId` instead of `userID`).
+
+---
+
+# VaVsta-форк (локальные факты, 2026)
+
+## Идентичность и конфиг
+- `applicationId` = `ru.vavsta.messenger`, namespace исходников — `io.element.android.x`.
+- Настройки бренда и дефолтов лежат в `local.properties` (**в `.gitignore`**, без дефолтов свежий клон соберётся неправильно):
+  - `vavsta.homeserver=https://chat.vavsta.ru`
+  - `vavsta.call_url=https://call.vavsta.ru/room`
+  - `vavsta.update_url=https://chat.vavsta.ru/vavsta-messenger/version.json`
+- Строки форка — только в `temporary.xml` соответствующего модуля. Русские строки в форке норма (напр. `vavsta_report_problem_stub`).
+
+## OTA-апдейтер (свой, не Squirrel)
+Всё живёт в `features/preferences/impl/.../about/`:
+- `UpdateChecker` — HTTPS-манифест, сравнение `versionCode`, скачивание APK с проверкой sha256/`packageName`/`versionCode`. Не-HTTPS `apkUrl` отбраковывается.
+- `UpdateInfoStore` — SharedPreferences-`vavsta_update_check`: кэш найденного манифеста + флаг «про эту версию уже показали уведомление». Нужен, чтобы About не делал второй сетевой запрос и чтобы не спамить уведомлением.
+- `UpdateCheckWorker` — `CoroutineWorker` + `@WorkerKey`/`@AssistedFactory` в карту `MetroWorkerFactory`. Только уведомление, **никогда** не качает и не ставит APK сам.
+- `UpdateCheckScheduler` — `enqueueUniquePeriodicWork` (сутки, `KEEP`) + one-time на старте, оба с `NetworkType.CONNECTED`.
+- `UpdateNotificationCreator` — канал `VAVSTA_UPDATES`, тап → implicit intent по action `ru.vavsta.messenger.action.OPEN_ABOUT`.
+- `UpdateCheckInitializer` (модуль `app`) — ставит обе работы из `ElementXApplication.onCreate`.
+
+Грабля, из-за которой всё это разнесено по модулям: `UpdateNotificationCreator` лежит в `features.preferences.impl`, а `MainActivity` — в `app`, оттуда настройки её не видно. Поэтому тап идёт **implicit intent-ом** по своему action, а ловит его `intent-filter` для `MainActivity` в `app/src/main/AndroidManifest.xml`. Экран About выводится наружу через `PreferencesEntryPoint.InitialTarget.About` → `PreferencesFlowNode.NavTarget.About`; `IntentResolver` отдаёт `ResolvedIntent.About`, `RootFlowNode.onOpenAbout()` → `LoggedInFlowNode.navigateToAbout()`. Экран About живёт внутри залогиненной сессии — без сессии тап по уведомлению просто ничего не делает.
+
+## Релиз (прод, `chat.vavsta.ru`)
+1. `plugins/src/main/kotlin/Versions.kt`: `versionYear`/`versionMonth`/`versionReleaseNumber` (CalVer) + `VERSION_NAME` (то, что видит юзер). `versionCode` = `(2000+year)*10000 + month*100 + release`, дальше домножается на 10 и добавляется abi-код (arm64 = 2).
+2. `./gradlew :app:assembleGplayRelease` → `app/build/outputs/apk/gplay/release/app-gplay-arm64-v8a-release.apk`.
+3. Залить APK на сервер **до** смены манифеста, сверить sha256/size на сервере, старый APK не удалять (откат = вернуть `version.json`).
+4. Атомарно переписать `/var/www/element/vavsta-messenger/version.json` (tmp + `mv`, владелец `www-data`).
+5. `systemctl start matrix-health-check.service` — он уже проверяет `/vavsta-messenger/version.json`, наличие APK по `apkUrl` и совпадение размера с `sizeBytes`. Логи: `journalctl -t matrix-health`, состояние `/var/lib/matrix-health/state`.
+
+**Подпись:** buildType `release` подписывается `app/signature/debug.keystore` (тот же, что у 1.0, сертификат `b0b051dc…`). Ключ менять нельзя — иначе OTA не встанет поверх установленной сборки.
+
+Прод сейчас: **1.0.1**, `versionCode` 202609012.
+
+## Грабли в тестах этого модуля
+- **Robolectric в `features.preferences.impl` не работает**: падает `IllegalArgumentException at DefaultSdkPicker` (не может выбрать SDK). Тесты на `Context`/SharedPreferences писать на mockk. В `appnav` тот же Robolectric работает (`RobolectricTest`).
+- **`AboutState.toString()` в юнит-тестах падает**: state держит function reference, и Turbine при попытке отформатировать несъеденное событие уходит в `kotlin.reflect` и даёт `KotlinReflectionInternalError`. В `AboutPresenterTest` после ассертов звать `cancelAndIgnoreRemainingEvents()`.
+- Сети в юнит-тестах избегать: `AboutPresenter` при пустом кэше сам уходит в `UpdateChecker.fetchUpdateInfo()`.
+
