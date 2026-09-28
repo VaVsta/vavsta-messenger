@@ -1,4 +1,13 @@
-# Contributing to Element X Android
+# Contributing to VaVsta Messenger
+
+This file is inherited from the upstream
+[Element X Android](https://github.com/element-hq/element-x-android)
+repository (all content below). It describes the upstream contribution
+workflow: PRs, string management on Localazy, screenshots and the CI tooling
+**for that repository**, and most of it does **not** apply to this fork.
+
+Bugs and features of the fork itself are handled directly by the author in
+this repository.
 
 <!--- TOC -->
 
