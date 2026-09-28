@@ -154,7 +154,7 @@ We wrap the `matrix-rust-sdk` to isolate the UI from the underlying SDK.
 
 **Подпись:** buildType `release` подписывается `app/signature/debug.keystore` (тот же, что у 1.0, сертификат `b0b051dc…`). Ключ менять нельзя — иначе OTA не встанет поверх установленной сборки.
 
-Прод сейчас: **1.0.2**, `versionCode` 202609022 (1.0.1 = 202609012, 1.0 = 202608042 — все три в `/var/www/element/vavsta-messenger/`, откат = вернуть нужный `version.json.bak-*`).
+Прод сейчас: **1.0.3**, `versionCode` 202609032 (1.0.2 = 202609022, 1.0.1 = 202609012, 1.0 = 202608042 — все в `/var/www/element/vavsta-messenger/`, откат = вернуть нужный `version.json.bak-*`). Локальный `version.json` в репо держать зеркалом пушнутой версии.
 
 ### Security-чек 2026-09-28 (все поверхности — чисто/закрыто)
 - **Git:** в ветке только 8 локальных коммитов, один бранч `develop`, stash/тэгов нет. Скан добавленных строк по 15 паттернам (tokens, PEM, JWT, AWS/Goog, ключи юзера, LAN/VPS IP, пути машины) — ноль совпадений. `local.properties` в `.gitignore`, в истории нет.
@@ -167,6 +167,15 @@ We wrap the `matrix-rust-sdk` to isolate the UI from the underlying SDK.
   - **Грабли Apache:** нельзя `Options -Indexes FollowSymLinks` (смешанный `-` и голый токен) → **только `Options -Indexes +FollowSymLinks`**, иначе `AH00526`.
   - **`/_synapse/admin/v1/server_version` открыт по дизайну** (версия Synapse 1.155.0 утекает) — так делает апстрим, оставлен; protected-admin-пути отдают 401, админка защищена.
 - **Известное, не чиним без решения:** релиз подписан публичным `app/signature/debug.keystore` — это не защита от подмены, реальная безопасность = HTTPS до `chat.vavsta.ru` с манифестом. Свой ключ = разрыв OTA.
+
+## Публикация (GitHub, 2026-09-28) — два публичных репо
+- `VaVsta/vavsta-messenger` (android, этот репо) и `VaVsta/vavsta-messenger-web` (=> `~/Проекты/vavsta-web`). Оба **public**, обе ветки-дефолт `develop`.
+- Remotes здесь: `origin` = `git@github.com:VaVsta/vavsta-messenger.git`, `upstream` = `git@github.com:element-hq/element-x-android.git`. У веба аналогично (upstream = element-web).
+- Пуш через **SSH**: gh добавлен `~/.local/bin/gh` (из `~/.local/opt/gh`), на GitHub у аккаунта `VaVsta` висит локальный `id_ed25519` (title `vavsta-laptop`), scopes токена включают `admin:public_key`. Ключ под паролем → перед git-ssh-операцией поднять агент:
+  `eval "$(ssh-agent -s)"` + `SSH_ASKPASS=/tmp/opencode/askpass.sh SSH_ASKPASS_REQUIRE=force ssh-add ~/.ssh/id_ed25519` (askpass = `echo "Lala101201"`).
+- **Грабля:** оба клона были **shallow** (`git rev-parse --is-shallow-repository` → true). Пуш с обрезанной историей падает на GitHub детерминированно: `remote: fatal: did not receive expected object <sha>` (sha = родитель, отрезанный границей shallow) — и по HTTPS, и по SSH. Лечится `git fetch --unshallow upstream` перед первым пушем.
+- README/CONTRIBUTING форка уже fork-specific (дисклеймер «неофициальный форк, не связан с Element», AGPL, разбор дефолтных серверов и `local.properties`). Лицензия — AGPL-3.0-ветка; SPDX-заголовки и `LICENSE` апстрима не вычищены.
+- Коммиты в апстрим `element-hq` не пушим (read-only).
 
 ## Грабли в тестах этого модуля
 - **`startActivity()` из Application-контекста требует `Intent.FLAG_ACTIVITY_NEW_TASK`**, иначе `AndroidRuntimeException`. Хуже всего, если обернуть в `runCatching {}` без лога: кнопка молча ничего не делает, краша нет, диагностировать нечем. Так и сломалась кнопка «дать разрешение на установку» в 1.0/1.0.1 (исправлено в 1.0.2). Правило: `startActivity` из presenter'а — всегда с флагом, всегда `Timber` на неудачу, и возвращать `Boolean`, чтобы UI показал ошибку, а не делал вид, что открыл.
