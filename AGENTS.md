@@ -156,6 +156,18 @@ We wrap the `matrix-rust-sdk` to isolate the UI from the underlying SDK.
 
 Прод сейчас: **1.0.2**, `versionCode` 202609022 (1.0.1 = 202609012, 1.0 = 202608042 — все три в `/var/www/element/vavsta-messenger/`, откат = вернуть нужный `version.json.bak-*`).
 
+### Security-чек 2026-09-28 (все поверхности — чисто/закрыто)
+- **Git:** в ветке только 8 локальных коммитов, один бранч `develop`, stash/тэгов нет. Скан добавленных строк по 15 паттернам (tokens, PEM, JWT, AWS/Goog, ключи юзера, LAN/VPS IP, пути машины) — ноль совпадений. `local.properties` в `.gitignore`, в истории нет.
+- **APK:** строки dex+native — только 3 публичных URL (`chat.vavsta.ru`, `call.vavsta.ru/room`, `.../version.json`); ни токенов ни ключей. В манифесте нет `exported=true` компонентов (наш `OPEN_ABOUT` висит на launchable `MainActivity`).
+- **Web (`chat.vavsta.ru`), закрыто 28.09:**
+  - `.bak`-манифесты убраны из вебрута в `/var/lib/vavsta-ota-backups/` (там же бэкапы `config.json` и vhost-конфигов).
+  - `Options -Indexes` для `/var/www/element` и `/icons` (у `/admin` намеренно оставлен `Indexes`). Внутри element-Directory добавлен `FilesMatch` deny для `.bak|old|incoming|swp|orig|tmp`.
+  - Из `/config.json` удалён чуждый MapTiler-ключ (`map_style_url`) — был публично читаем из интернета.
+  - **Проверено:** `/vavsta-messenger/` → 403, `.bak` → 404, `version.json`/APK → 200, health-check 0 алертов.
+  - **Грабли Apache:** нельзя `Options -Indexes FollowSymLinks` (смешанный `-` и голый токен) → **только `Options -Indexes +FollowSymLinks`**, иначе `AH00526`.
+  - **`/_synapse/admin/v1/server_version` открыт по дизайну** (версия Synapse 1.155.0 утекает) — так делает апстрим, оставлен; protected-admin-пути отдают 401, админка защищена.
+- **Известное, не чиним без решения:** релиз подписан публичным `app/signature/debug.keystore` — это не защита от подмены, реальная безопасность = HTTPS до `chat.vavsta.ru` с манифестом. Свой ключ = разрыв OTA.
+
 ## Грабли в тестах этого модуля
 - **`startActivity()` из Application-контекста требует `Intent.FLAG_ACTIVITY_NEW_TASK`**, иначе `AndroidRuntimeException`. Хуже всего, если обернуть в `runCatching {}` без лога: кнопка молча ничего не делает, краша нет, диагностировать нечем. Так и сломалась кнопка «дать разрешение на установку» в 1.0/1.0.1 (исправлено в 1.0.2). Правило: `startActivity` из presenter'а — всегда с флагом, всегда `Timber` на неудачу, и возвращать `Boolean`, чтобы UI показал ошибку, а не делал вид, что открыл.
 - **Разрешение «Установка из неизвестных источников»** — appop, не pm-разрешение: `adb shell appops set ru.vavsta.messenger REQUEST_INSTALL_PACKAGES allow|deny`. Проверка в коде — `canRequestPackageInstalls()`.
