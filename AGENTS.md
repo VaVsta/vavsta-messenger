@@ -154,9 +154,12 @@ We wrap the `matrix-rust-sdk` to isolate the UI from the underlying SDK.
 
 **Подпись:** buildType `release` подписывается `app/signature/debug.keystore` (тот же, что у 1.0, сертификат `b0b051dc…`). Ключ менять нельзя — иначе OTA не встанет поверх установленной сборки.
 
-Прод сейчас: **1.0.1**, `versionCode` 202609012.
+Прод сейчас: **1.0.2**, `versionCode` 202609022 (1.0.1 = 202609012, 1.0 = 202608042 — все три в `/var/www/element/vavsta-messenger/`, откат = вернуть нужный `version.json.bak-*`).
 
 ## Грабли в тестах этого модуля
+- **`startActivity()` из Application-контекста требует `Intent.FLAG_ACTIVITY_NEW_TASK`**, иначе `AndroidRuntimeException`. Хуже всего, если обернуть в `runCatching {}` без лога: кнопка молча ничего не делает, краша нет, диагностировать нечем. Так и сломалась кнопка «дать разрешение на установку» в 1.0/1.0.1 (исправлено в 1.0.2). Правило: `startActivity` из presenter'а — всегда с флагом, всегда `Timber` на неудачу, и возвращать `Boolean`, чтобы UI показал ошибку, а не делал вид, что открыл.
+- **Разрешение «Установка из неизвестных источников»** — appop, не pm-разрешение: `adb shell appops set ru.vavsta.messenger REQUEST_INSTALL_PACKAGES allow|deny`. Проверка в коде — `canRequestPackageInstalls()`.
+- **HyperOS/Android 16** может не открыть `ACTION_MANAGE_UNKNOWN_APP_SOURCES` с `package:`-URI — поэтому `openInstallPermissionSettings` идёт по цепочке intent'ов (с URI → без URI → `ACTION_APPLICATION_DETAILS_SETTINGS`), а не по одному.
 - **Robolectric в `features.preferences.impl` не работает**: падает `IllegalArgumentException at DefaultSdkPicker` (не может выбрать SDK). Тесты на `Context`/SharedPreferences писать на mockk. В `appnav` тот же Robolectric работает (`RobolectricTest`).
 - **`AboutState.toString()` в юнит-тестах падает**: state держит function reference, и Turbine при попытке отформатировать несъеденное событие уходит в `kotlin.reflect` и даёт `KotlinReflectionInternalError`. В `AboutPresenterTest` после ассертов звать `cancelAndIgnoreRemainingEvents()`.
 - Сети в юнит-тестах избегать: `AboutPresenter` при пустом кэше сам уходит в `UpdateChecker.fetchUpdateInfo()`.
