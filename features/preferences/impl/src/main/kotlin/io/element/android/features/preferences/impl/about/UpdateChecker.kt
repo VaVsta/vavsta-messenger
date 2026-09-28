@@ -9,10 +9,10 @@ package io.element.android.features.preferences.impl.about
 
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.os.Build
 import android.provider.Settings
 import androidx.core.content.FileProvider
+import androidx.core.net.toUri
 import io.element.android.features.preferences.impl.BuildConfig
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -195,9 +195,35 @@ object UpdateChecker {
     fun canRequestInstalls(context: Context): Boolean =
         Build.VERSION.SDK_INT < Build.VERSION_CODES.O || context.packageManager.canRequestPackageInstalls()
 
-    fun openInstallPermissionSettings(context: Context) {
-        val intent = Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:${context.packageName}"))
-        runCatching { context.startActivity(intent) }
+    /**
+     * Открывает экран, где разрешено ставить пакеты от этого приложения.
+     *
+     * Флаг [Intent.FLAG_ACTIVITY_NEW_TASK] обязателен: зовём из Application-контекста, а не из Activity,
+     * иначе `startActivity()` бросит AndroidRuntimeException. Раньше флага не было, а исключение
+     * глоталось runCatching — кнопка просто ничего не делала.
+     *
+     * На части прошивок (в том числе HyperOS) первый intent не срабатывает, поэтому идём по цепочке
+     * запасных вариантов. Возвращает false, если не открылось ничего — тогда вызывающий может
+     * показать ошибку, а не делать вид, что всё прошло.
+     */
+    fun openInstallPermissionSettings(context: Context): Boolean {
+        val packageUri = "package:${context.packageName}".toUri()
+        val candidates = listOf(
+            Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, packageUri),
+            // Тот же экран, но без package-URI: некоторые прошивки парсят только action.
+            Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES),
+            // Страница «О приложении» — тумблер установки из неизвестных источников есть и там.
+            Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, packageUri),
+        )
+
+        candidates.forEach { intent ->
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            val started = runCatching { context.startActivity(intent) }
+            started.onSuccess { return true }
+            started.exceptionOrNull()?.let { Timber.w(it, "Cannot open install permission settings: ${intent.action}") }
+        }
+        Timber.e("Could not open install permission settings: none of ${candidates.size} intents worked")
+        return false
     }
 
     fun installedVersionCode(context: Context): Long {

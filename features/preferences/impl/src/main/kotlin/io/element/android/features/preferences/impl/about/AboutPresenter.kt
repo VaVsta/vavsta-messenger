@@ -98,7 +98,11 @@ class AboutPresenter(
         fun installUpdate() {
             val apk = pendingApk ?: return
             if (!UpdateChecker.canRequestInstalls(context)) {
-                UpdateChecker.openInstallPermissionSettings(context)
+                if (!UpdateChecker.openInstallPermissionSettings(context)) {
+                    // Раньше тут был молчаливый runCatching: кнопка ничего не делала и не врала.
+                    updateStatus = UpdateUiStatus.Error
+                    return
+                }
                 updateStatus = UpdateUiStatus.InstallPermissionNeeded
                 return
             }
