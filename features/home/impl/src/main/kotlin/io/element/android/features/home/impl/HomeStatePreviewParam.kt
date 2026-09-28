@@ -40,13 +40,9 @@ open class HomeStatePreviewParam : PreviewParameterProvider<HomeState> {
                 // For the bottom nav bar to be visible in the preview, the user must be member of at least one space
                 homeSpacesState = aHomeSpacesState(),
             ),
-            aHomeState(
-                currentHomeNavigationBarItem = HomeNavigationBarItem.Spaces,
-            ),
         ) + RoomListStatePreviewParam().values.map {
             aHomeState(roomListState = it)
         } + aHomeState(
-            currentHomeNavigationBarItem = HomeNavigationBarItem.Spaces,
             homeSpacesState = aHomeSpacesState(
                 spaceRooms = emptyList(),
             ),

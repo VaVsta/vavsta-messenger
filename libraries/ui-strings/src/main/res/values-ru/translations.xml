@@ -565,7 +565,7 @@
   <string name="screen_timeline_item_menu_send_failure_unsigned_device">"Сообщение не отправлено, потому что %1$s не подтвердил(а) все свои устройства."</string>
   <string name="screen_timeline_item_menu_send_failure_you_unsigned_device">"Сообщение не отправлено, поскольку вы не подтвердили одно или несколько своих устройств."</string>
   <string name="screen_view_location_title">"Местоположение"</string>
-  <string name="settings_version_number">"Версия: %1$s (%2$s)"</string>
+  <string name="settings_version_number">"Версия: %1$s"</string>
   <string name="test_language_identifier">"ru"</string>
   <string name="timeline_decryption_failure_historical_event_no_key_backup">"На этом устройстве недоступна история сообщений"</string>
   <string name="timeline_decryption_failure_historical_event_unverified_device">"Вам необходимо подтвердить это устройство чтобы получить доступ к истории сообщений"</string>

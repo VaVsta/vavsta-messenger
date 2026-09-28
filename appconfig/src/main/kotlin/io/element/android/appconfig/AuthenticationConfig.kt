@@ -9,7 +9,7 @@
 package io.element.android.appconfig
 
 object AuthenticationConfig {
-    const val MATRIX_ORG_URL = "https://chat.vavsta.ru"
+    val MATRIX_ORG_URL: String = BuildConfig.HOMESERVER_URL
 
     /**
      * URL with some docs that explain what's sliding sync and how to add it to your home server.

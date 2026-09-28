@@ -16,6 +16,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
+import io.element.android.compound.colors.SemanticColorsLightDark
+import io.element.android.compound.colors.accentFromName
 import io.element.android.compound.theme.ElementTheme
 import io.element.android.compound.theme.Theme
 import io.element.android.compound.theme.mapToTheme
@@ -67,6 +69,17 @@ fun ElementThemeApp(
     val theme by remember(isBlackThemeAllowed) {
         appPreferencesStore.getThemeFlow().mapToTheme(allowBlackTheme = isBlackThemeAllowed)
     }.collectAsState(initial = Theme.System)
+    val accent by remember {
+        appPreferencesStore.accentColorFlow()
+    }.collectAsState(initial = null)
+    val palette = remember(accent, theme, compoundLight, compoundDark) {
+        if (accent == null) {
+            SemanticColorsLightDark(light = compoundLight, dark = compoundDark)
+        } else {
+            // AMOLED-режим (Theme.Black): чистый чёрный фон в тёмной теме.
+            SemanticColorsLightDark.forAccent(accentFromName(accent), black = theme == Theme.Black)
+        }
+    }
     LaunchedEffect(theme) {
         AppCompatDelegate.setDefaultNightMode(
             when (theme) {
@@ -82,8 +95,8 @@ fun ElementThemeApp(
         ElementTheme(
             theme = theme,
             content = content,
-            compoundLight = compoundLight,
-            compoundDark = compoundDark,
+            compoundLight = palette.light,
+            compoundDark = palette.dark,
         )
     }
 }

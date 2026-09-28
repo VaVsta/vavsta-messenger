@@ -59,6 +59,12 @@ android {
                 ?: readLocalProperty("features.call.regeshake.url")
                 ?: ""
         )
+        buildConfigFieldStr(
+            name = "CALL_BASE_URL",
+            // Форк VaVsta: дефолт = наш call, не appassets.element.io
+            value = readLocalProperty("vavsta.call_url")
+                ?: "https://call.vavsta.ru/room"
+        )
     }
 }
 

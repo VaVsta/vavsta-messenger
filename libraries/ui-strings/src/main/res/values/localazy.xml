@@ -583,7 +583,7 @@ Are you sure you want to continue?"</string>
   <string name="screen_timeline_item_menu_send_failure_unsigned_device">"Message not sent because %1$s has not verified all devices."</string>
   <string name="screen_timeline_item_menu_send_failure_you_unsigned_device">"Message not sent because you have not verified one or more of your devices."</string>
   <string name="screen_view_location_title">"Location"</string>
-  <string name="settings_version_number">"Version: %1$s (%2$s)"</string>
+  <string name="settings_version_number">"Version: %1$s"</string>
   <string name="test_language_identifier">"en"</string>
   <string name="test_untranslated_default_language_identifier">"en"</string>
   <string name="timeline_decryption_failure_historical_event_no_key_backup">"Historical messages are not available on this device"</string>

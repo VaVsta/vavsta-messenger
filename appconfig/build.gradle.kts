@@ -1,5 +1,6 @@
 import config.BuildTimeConfig
 import extension.buildConfigFieldStr
+import extension.readLocalProperty
 
 /*
  * Copyright (c) 2025 Element Creations Ltd.
@@ -43,6 +44,12 @@ android {
             } else {
                 "element-x-android"
             },
+        )
+        buildConfigFieldStr(
+            name = "HOMESERVER_URL",
+            // Форк VaVsta: дефолт ДОЛЖЕН быть нашим, иначе сборка без local.properties
+            // (local.properties в .gitignore) молча уедет на matrix.org
+            value = readLocalProperty("vavsta.homeserver") ?: "https://chat.vavsta.ru",
         )
     }
 }

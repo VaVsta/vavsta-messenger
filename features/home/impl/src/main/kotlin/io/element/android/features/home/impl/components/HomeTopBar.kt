@@ -74,7 +74,6 @@ import io.element.android.libraries.designsystem.components.TopAppBarScrollBehav
 import io.element.android.libraries.designsystem.components.avatar.Avatar
 import io.element.android.libraries.designsystem.components.avatar.AvatarSize
 import io.element.android.libraries.designsystem.components.avatar.AvatarType
-import io.element.android.libraries.designsystem.modifiers.backgroundVerticalGradient
 import io.element.android.libraries.designsystem.preview.ElementPreview
 import io.element.android.libraries.designsystem.preview.PreviewsDayNight
 import io.element.android.libraries.designsystem.preview.USER_NAME_ALICE
@@ -122,14 +121,11 @@ fun HomeTopBar(
     Column(modifier) {
         TopAppBar(
             modifier = Modifier
-                .backgroundVerticalGradient(
-                    isVisible = !areSearchResultsDisplayed,
-                )
                 .statusBarsPadding()
                 .padding(contentPadding),
             colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = Color.Transparent,
-                scrolledContainerColor = Color.Transparent,
+                containerColor = ElementTheme.colors.bgCanvasDefault,
+                scrolledContainerColor = ElementTheme.colors.bgCanvasDefault,
             ),
             title = {
                 val displayTitle = when (selectedNavigationItem) {
@@ -139,7 +135,6 @@ fun HomeTopBar(
                             else -> stringResource(selectedNavigationItem.labelRes)
                         }
                     }
-                    HomeNavigationBarItem.Spaces -> null
                 }
                 displayTitle?.let {
                     val style = when (spaceFiltersState) {
@@ -496,7 +491,7 @@ internal fun HomeTopBarSpaceFiltersSelectedPreview() = ElementPreview {
 @Composable
 internal fun HomeTopBarSpacesPreview() = ElementPreview {
     HomeTopBar(
-        selectedNavigationItem = HomeNavigationBarItem.Spaces,
+        selectedNavigationItem = HomeNavigationBarItem.Chats,
         currentUserAndNeighbors = persistentListOf(aMatrixUser(id = "@id:domain", displayName = USER_NAME_ALICE)),
         showAvatarIndicator = false,
         areSearchResultsDisplayed = false,

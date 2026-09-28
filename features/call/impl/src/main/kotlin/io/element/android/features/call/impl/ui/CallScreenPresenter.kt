@@ -8,6 +8,7 @@
 
 package io.element.android.features.call.impl.ui
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -83,7 +84,8 @@ class CallScreenPresenter(
         var ignoreWebViewError by rememberSaveable { mutableStateOf(false) }
         var webViewError by remember { mutableStateOf<String?>(null) }
         val languageTag = languageTagProvider.provideLanguageTag()
-        val theme = "dark"
+        // Тема звонка = текущая тема приложения (тёмная/светлая)
+        val theme = if (isSystemInDarkTheme()) "dark" else "light"
 
         DisposableEffect(Unit) {
             coroutineScope.launch {

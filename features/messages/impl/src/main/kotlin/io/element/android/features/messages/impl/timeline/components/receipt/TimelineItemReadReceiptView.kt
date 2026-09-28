@@ -8,16 +8,14 @@
 
 package io.element.android.features.messages.impl.timeline.components.receipt
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -32,19 +30,14 @@ import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.zIndex
-import io.element.android.appconfig.TimelineConfig
 import io.element.android.compound.theme.ElementTheme
 import io.element.android.compound.tokens.generated.CompoundIcons
 import io.element.android.features.messages.impl.timeline.model.ReadReceiptData
-import io.element.android.libraries.designsystem.components.avatar.Avatar
 import io.element.android.libraries.designsystem.components.avatar.AvatarSize
-import io.element.android.libraries.designsystem.components.avatar.AvatarType
 import io.element.android.libraries.designsystem.components.avatar.getBestName
 import io.element.android.libraries.designsystem.preview.ElementPreview
 import io.element.android.libraries.designsystem.preview.PreviewsDayNight
 import io.element.android.libraries.designsystem.theme.components.Icon
-import io.element.android.libraries.designsystem.theme.components.Text
 import io.element.android.libraries.matrix.api.timeline.item.event.LocalEventSendState
 import io.element.android.libraries.testtags.TestTags
 import io.element.android.libraries.ui.strings.CommonPlurals
@@ -59,7 +52,7 @@ fun TimelineItemReadReceiptView(
 ) {
     if (state.receipts.isNotEmpty()) {
         ReadReceiptsRow(modifier = modifier) {
-            ReadReceiptsAvatars(
+            ReadReceiptsDoubleCheck(
                 receipts = state.receipts,
                 onClick = onReadReceiptsClick,
             )
@@ -85,7 +78,7 @@ fun TimelineItemReadReceiptView(
                     ReadReceiptsRow(modifier = modifier) {
                         Icon(
                             modifier = Modifier.padding(2.dp),
-                            imageVector = CompoundIcons.CheckCircle(),
+                            imageVector = CompoundIcons.Check(),
                             contentDescription = stringResource(id = CommonStrings.common_sent),
                             tint = ElementTheme.colors.iconSecondary
                         )
@@ -119,14 +112,11 @@ private fun ReadReceiptsRow(
 }
 
 @Composable
-private fun ReadReceiptsAvatars(
+private fun ReadReceiptsDoubleCheck(
     receipts: ImmutableList<ReadReceiptData>,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val avatarSize = AvatarSize.TimelineReadReceipt.dp
-    val avatarStrokeSize = 1.dp
-    val avatarStrokeColor = ElementTheme.colors.bgCanvasDefault
     val receiptDescription = computeReceiptDescription(receipts)
     Row(
         modifier = modifier
@@ -140,40 +130,22 @@ private fun ReadReceiptsAvatars(
                 testTag = TestTags.messageReadReceipts.value
                 contentDescription = receiptDescription
                 role = Role.Button
-            },
-        horizontalArrangement = Arrangement.spacedBy(4.dp - avatarStrokeSize),
+            }
+            .padding(start = 2.dp),
+        horizontalArrangement = Arrangement.spacedBy((-2).dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Box(
-            contentAlignment = Alignment.CenterEnd,
-        ) {
-            receipts
-                .take(TimelineConfig.MAX_READ_RECEIPT_TO_DISPLAY)
-                .reversed()
-                .forEachIndexed { index, readReceiptData ->
-                    Box(
-                        modifier = Modifier
-                            .padding(end = (12.dp + avatarStrokeSize * 2) * index)
-                            .size(size = avatarSize + avatarStrokeSize * 2)
-                            .clip(CircleShape)
-                            .background(avatarStrokeColor)
-                            .zIndex(index.toFloat()),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Avatar(
-                            avatarData = readReceiptData.avatarData,
-                            avatarType = AvatarType.User,
-                        )
-                    }
-                }
-        }
-        if (receipts.size > TimelineConfig.MAX_READ_RECEIPT_TO_DISPLAY) {
-            Text(
-                text = "+" + (receipts.size - TimelineConfig.MAX_READ_RECEIPT_TO_DISPLAY),
-                style = ElementTheme.typography.fontBodyXsRegular,
-                color = ElementTheme.colors.textSecondary,
-            )
-        }
+        Icon(
+            imageVector = CompoundIcons.Check(),
+            contentDescription = null,
+            tint = ElementTheme.colors.iconAccentPrimary
+        )
+        Icon(
+            modifier = Modifier.offset(x = (-6).dp, y = 1.dp),
+            imageVector = CompoundIcons.Check(),
+            contentDescription = null,
+            tint = ElementTheme.colors.iconAccentPrimary
+        )
     }
 }
 

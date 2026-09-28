@@ -85,12 +85,12 @@ fun LoginWithClassicView(
                     .fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Spacer(Modifier.height(40.dp))
+                Spacer(Modifier.height(12.dp))
                 Box(
                     modifier = Modifier
-                        .size(54.dp)
-                        .shadow(elevation = 10.dp, shape = RoundedCornerShape(15.dp))
-                        .background(ElementTheme.colors.bgCanvasDefault, shape = RoundedCornerShape(15.dp)),
+                        .size(48.dp)
+                        .shadow(elevation = 8.dp, shape = RoundedCornerShape(14.dp))
+                        .background(ElementTheme.colors.bgCanvasDefault, shape = RoundedCornerShape(14.dp)),
                     contentAlignment = Alignment.Center,
                 ) {
                     val resId = if (state.isElementPro) {
@@ -99,19 +99,19 @@ fun LoginWithClassicView(
                         R.drawable.element_foss_logo
                     }
                     Image(
-                        modifier = Modifier.size(37.5.dp),
+                        modifier = Modifier.size(32.dp),
                         painter = painterResource(id = resId),
                         contentDescription = null,
                     )
                 }
-                Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(6.dp))
                 Text(
                     text = stringResource(id = R.string.screen_onboarding_welcome_title),
                     color = ElementTheme.colors.textPrimary,
                     style = ElementTheme.typography.fontHeadingMdBold,
                     textAlign = TextAlign.Center,
                 )
-                Spacer(Modifier.height(10.dp))
+                Spacer(Modifier.height(4.dp))
             }
         },
         content = {
@@ -120,7 +120,7 @@ fun LoginWithClassicView(
                     .fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Spacer(Modifier.height(40.dp))
+                Spacer(Modifier.height(8.dp))
                 BitmapAvatar(
                     avatarData = AvatarData(
                         id = state.userId.value,
@@ -131,7 +131,7 @@ fun LoginWithClassicView(
                     ),
                     bitmap = state.avatar,
                 )
-                Spacer(Modifier.height(24.dp))
+                Spacer(Modifier.height(8.dp))
                 Text(
                     modifier = Modifier.padding(horizontal = 32.dp),
                     text = stringResource(R.string.screen_onboarding_welcome_back),
@@ -147,17 +147,17 @@ fun LoginWithClassicView(
                         color = ElementTheme.colors.textPrimary,
                         textAlign = TextAlign.Center,
                     )
+Spacer(Modifier.height(4.dp))
+                    }
+                    // UserId
+                    Text(
+                        text = state.userId.value,
+                        style = if (state.displayName == null) ElementTheme.typography.fontHeadingLgBold else ElementTheme.typography.fontBodyLgRegular,
+                        color = ElementTheme.colors.textPrimary,
+                        textAlign = TextAlign.Center,
+                    )
+                    // Min spacing
                     Spacer(Modifier.height(16.dp))
-                }
-                // UserId
-                Text(
-                    text = state.userId.value,
-                    style = if (state.displayName == null) ElementTheme.typography.fontHeadingLgBold else ElementTheme.typography.fontBodyLgRegular,
-                    color = ElementTheme.colors.textPrimary,
-                    textAlign = TextAlign.Center,
-                )
-                // Min spacing
-                Spacer(Modifier.height(45.dp))
                 ButtonColumnMolecule {
                     Button(
                         text = stringResource(CommonStrings.action_continue),

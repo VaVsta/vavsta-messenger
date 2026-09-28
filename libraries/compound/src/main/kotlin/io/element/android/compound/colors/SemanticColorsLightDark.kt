@@ -21,5 +21,14 @@ data class SemanticColorsLightDark(
             light = compoundColorsLight,
             dark = compoundColorsDark,
         )
+
+        /** Палитры под выбранный акцент. [black] — чистый чёрный для AMOLED. */
+        fun forAccent(accent: Accent, black: Boolean = false): SemanticColorsLightDark {
+            if (accent == Accent.Neon && !black) return default
+            return SemanticColorsLightDark(
+                light = compoundColorsLight(accent),
+                dark = compoundColorsDark(accent, black),
+            )
+        }
     }
 }

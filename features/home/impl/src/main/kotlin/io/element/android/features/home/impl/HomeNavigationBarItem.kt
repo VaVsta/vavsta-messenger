@@ -10,7 +10,6 @@ package io.element.android.features.home.impl
 
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
-import io.element.android.compound.tokens.generated.CompoundIcons
 
 enum class HomeNavigationBarItem(
     @StringRes
@@ -18,17 +17,13 @@ enum class HomeNavigationBarItem(
 ) {
     Chats(
         labelRes = R.string.screen_home_tab_chats
-    ),
-    Spaces(
-        labelRes = R.string.screen_home_tab_spaces
     );
 
     @Composable
     fun icon(
         isSelected: Boolean,
     ) = when (this) {
-        Chats -> if (isSelected) CompoundIcons.ChatSolid() else CompoundIcons.Chat()
-        Spaces -> if (isSelected) CompoundIcons.SpaceSolid() else CompoundIcons.Space()
+        Chats -> if (isSelected) VaVstaIcons.ChatSolid else VaVstaIcons.Chat
     }
 
     companion object {

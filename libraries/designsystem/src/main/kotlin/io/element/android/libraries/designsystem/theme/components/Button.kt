@@ -184,7 +184,7 @@ private fun ButtonInternal(
     }
 
     // Apply the same shape to all buttons, so that the focus ring is consistent across styles.
-    val shape = RoundedCornerShape(percent = 50)
+    val shape = RoundedCornerShape(12.dp)
 
     val border = when (style) {
         ButtonStyle.Filled -> null

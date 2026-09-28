@@ -44,6 +44,12 @@ interface AppPreferencesStore {
     /** The name of the chosen theme, or `null` when the user has not picked one and the system setting should be followed. */
     fun getThemeFlow(): Flow<String?>
 
+    /** Выбранный цветовой акцент (имя [io.element.android.compound.colors.Accent]), null = неоновый по умолчанию. */
+    suspend fun setAccentColor(accent: String)
+
+    /** Поток выбранного акцента, `null` пока пользователь не выбрал (дефолт — неон). */
+    fun accentColorFlow(): Flow<String?>
+
     /**
      * @param value the distance in metres the user must move before a new live location is published.
      */

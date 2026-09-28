@@ -1,0 +1,9 @@
+{
+  "versionCode": 202608042,
+  "versionName": "1.0",
+  "apkUrl": "https://chat.vavsta.ru/vavsta-messenger/vavsta-messenger-arm64-202608042.apk",
+  "sha256": "dc0d9b943413cb1aec88dab3feef5c5c7b8cf9c94ed1d7227a1314f6e61db770",
+  "sizeBytes": 117598464,
+  "publishedAt": "2026-09-27T04:51:56+03:00",
+  "notes": "Первая рабочая OTA: автопроверка обновлений, скачивание с проверкой sha256 и установка"
+}

@@ -9,7 +9,6 @@
 package io.element.android.features.login.impl.screens.onboarding
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
@@ -89,7 +88,7 @@ class OnBoardingPresenter(
         val canLoginWithQrCode by produceState(initialValue = false, linkAccountProvider) {
             value = linkAccountProvider == null
         }
-        val canReportBug by remember { rageshakeFeatureAvailability.isAvailable() }.collectAsState(false)
+        val canReportBug = false
         var showReportBug by rememberSaveable { mutableStateOf(false) }
         val onBoardingLogoResId = remember {
             onBoardingLogoResIdProvider.get()

@@ -8,8 +8,10 @@
 
 package io.element.android.features.call.impl.utils
 
+import android.net.Uri
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
+import io.element.android.features.call.impl.BuildConfig
 import io.element.android.libraries.core.extensions.runCatchingExceptions
 import io.element.android.libraries.matrix.api.MatrixClientProvider
 import io.element.android.libraries.matrix.api.core.RoomId
@@ -18,8 +20,9 @@ import io.element.android.libraries.matrix.api.widget.CallWidgetSettingsProvider
 import io.element.android.libraries.preferences.api.store.AppPreferencesStore
 import io.element.android.services.appnavstate.api.ActiveRoomsHolder
 import kotlinx.coroutines.flow.firstOrNull
+import timber.log.Timber
 
-private const val EMBEDDED_CALL_WIDGET_BASE_URL = "https://call.vavsta.ru/room"
+private val EMBEDDED_CALL_WIDGET_BASE_URL = BuildConfig.CALL_BASE_URL
 
 @ContributesBinding(AppScope::class)
 class DefaultCallWidgetProvider(
@@ -60,11 +63,28 @@ class DefaultCallWidgetProvider(
             theme = theme,
         ).getOrThrow()
 
+        val callUrlWithAccent = buildString(callUrl.length + 32) {
+            append(callUrl)
+            val separator = if (callUrl.contains("?")) "&" else "?"
+            append(separator)
+            append("accent=")
+            // Имя акцента (Neon/Cyan/Green/Purple/Orange) или «Neon» по умолчанию
+            val accentName = accentColorFromPreferences()
+            append(Uri.encode(accentName))
+        }
+
+        android.util.Log.d("VaVstaCallUrl", "URL звонка = " + callUrlWithAccent)
         val driver = room.getWidgetDriver(widgetSettings).getOrThrow()
 
         CallWidgetProvider.GetWidgetResult(
             driver = driver,
-            url = callUrl,
+            url = callUrlWithAccent,
         )
+    }
+
+    /** Акцентная палитра из настроек приложения, `Neon` по умолчанию. */
+    private suspend fun accentColorFromPreferences(): String {
+        val accent = appPreferencesStore.accentColorFlow().firstOrNull()
+        return accent ?: "Neon"
     }
 }
