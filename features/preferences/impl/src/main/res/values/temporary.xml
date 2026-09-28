@@ -10,7 +10,6 @@
     <string name="vavsta_accent_green">Green</string>
     <string name="vavsta_accent_purple">Purple</string>
     <string name="vavsta_accent_orange">Orange</string>
-    <string name="vavsta_report_problem_stub">Функция пока недоступна</string>
     <string name="vavsta_update_channel_name">Обновления</string>
     <string name="vavsta_update_channel_description">Уведомления о новых версиях VaVsta</string>
     <string name="vavsta_update_available_title">Доступно обновление %1$s</string>

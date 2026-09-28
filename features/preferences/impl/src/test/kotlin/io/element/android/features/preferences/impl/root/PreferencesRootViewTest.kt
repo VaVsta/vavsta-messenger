@@ -221,17 +221,19 @@ class PreferencesRootViewTest : RobolectricTest() {
     }
 
     @Test
-    fun `click on Report a problem sends the stub event`() = runAndroidComposeUiTest {
-        val eventsRecorder = EventsRecorder<PreferencesRootEvent>()
-        setView(
-            aPreferencesRootState(
-                canReportBug = true,
-                eventSink = eventsRecorder,
-            ),
-        )
-        val text = activity!!.getString(CommonStrings.common_report_a_problem)
-        onNode(hasText(text) and hasClickAction()).performScrollTo().performClick()
-        eventsRecorder.assertSingle(PreferencesRootEvent.OnReportProblemStub)
+    fun `click on Report a problem opens the VaVsta repository`() = runAndroidComposeUiTest {
+        val eventsRecorder = EventsRecorder<PreferencesRootEvent>(expectEvents = false)
+        ensureCalledOnce { callback ->
+            setView(
+                aPreferencesRootState(
+                    canReportBug = true,
+                    eventSink = eventsRecorder,
+                ),
+                onOpenReportProblem = callback,
+            )
+            val text = activity!!.getString(CommonStrings.common_report_a_problem)
+            onNode(hasText(text) and hasClickAction()).performScrollTo().performClick()
+        }
     }
 
     @Test
@@ -452,6 +454,7 @@ private fun AndroidComposeUiTest<ComponentActivity>.setView(
     onOpenAnalytics: () -> Unit = EnsureNeverCalled(),
     onOpenLockScreenSettings: () -> Unit = EnsureNeverCalled(),
     onOpenAbout: () -> Unit = EnsureNeverCalled(),
+    onOpenReportProblem: () -> Unit = EnsureNeverCalled(),
     onOpenDeveloperSettings: () -> Unit = EnsureNeverCalled(),
     onOpenAdvancedSettings: () -> Unit = EnsureNeverCalled(),
     onOpenLabs: () -> Unit = EnsureNeverCalled(),
@@ -473,6 +476,7 @@ private fun AndroidComposeUiTest<ComponentActivity>.setView(
             onOpenAnalytics = onOpenAnalytics,
             onOpenLockScreenSettings = onOpenLockScreenSettings,
             onOpenAbout = onOpenAbout,
+            onOpenReportProblem = onOpenReportProblem,
             onOpenDeveloperSettings = onOpenDeveloperSettings,
             onOpenAdvancedSettings = onOpenAdvancedSettings,
             onOpenLabs = onOpenLabs,

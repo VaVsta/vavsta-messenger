@@ -65,6 +65,7 @@ fun PreferencesRootView(
     onOpenAnalytics: () -> Unit,
     onOpenLockScreenSettings: () -> Unit,
     onOpenAbout: () -> Unit,
+    onOpenReportProblem: () -> Unit,
     onOpenDeveloperSettings: () -> Unit,
     onOpenAdvancedSettings: () -> Unit,
     onOpenLabs: () -> Unit,
@@ -122,6 +123,7 @@ fun PreferencesRootView(
             GeneralSection(
                 state = state,
                 onOpenAbout = onOpenAbout,
+                onOpenReportProblem = onOpenReportProblem,
                 onOpenAnalytics = onOpenAnalytics,
                 onOpenAdvancedSettings = onOpenAdvancedSettings,
                 onOpenDeveloperSettings = onOpenDeveloperSettings,
@@ -281,6 +283,7 @@ private fun ColumnScope.ManageAccountSection(
 private fun ColumnScope.GeneralSection(
     state: PreferencesRootState,
     onOpenAbout: () -> Unit,
+    onOpenReportProblem: () -> Unit,
     onOpenAnalytics: () -> Unit,
     onOpenAdvancedSettings: () -> Unit,
     onOpenLabs: () -> Unit,
@@ -309,7 +312,7 @@ private fun ColumnScope.GeneralSection(
         ListItem(
             content = { Text(stringResource(id = CommonStrings.common_report_a_problem)) },
             leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.ChatProblem())),
-            onClick = { state.eventSink(PreferencesRootEvent.OnReportProblemStub) }
+            onClick = onOpenReportProblem
         )
     }
     if (state.showAnalyticsSettings) {
@@ -395,6 +398,7 @@ private fun ContentToPreview(state: PreferencesRootState) {
         onOpenAdvancedSettings = {},
         onOpenLabs = {},
         onOpenAbout = {},
+        onOpenReportProblem = {},
         onSecureBackupClick = {},
         onManageAccountClick = {},
         onLinkNewDeviceClick = {},

@@ -45,7 +45,7 @@ private const val versionMonth = 9
  * Release number in the month. Value must be in [0,99].
  * Do not update this value. it is updated by the release script.
  */
-private const val versionReleaseNumber = 3
+private const val versionReleaseNumber = 4
 
 object Versions {
     /**
@@ -55,7 +55,7 @@ object Versions {
      * See comment above for the calculation method.
      */
     const val VERSION_CODE = (2000 + versionYear) * 10_000 + versionMonth * 100 + versionReleaseNumber
-    const val VERSION_NAME = "1.0.3"
+    const val VERSION_NAME = "1.0.4"
 
     /**
      * Compile SDK version. Must be updated when a new Android version is released.

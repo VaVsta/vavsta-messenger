@@ -132,7 +132,7 @@ We wrap the `matrix-rust-sdk` to isolate the UI from the underlying SDK.
   - `vavsta.homeserver=https://chat.vavsta.ru`
   - `vavsta.call_url=https://call.vavsta.ru/room`
   - `vavsta.update_url=https://chat.vavsta.ru/vavsta-messenger/version.json`
-- Строки форка — только в `temporary.xml` соответствующего модуля. Русские строки в форке норма (напр. `vavsta_report_problem_stub`).
+- Строки форка — только в `temporary.xml` соответствующего модуля. Русские строки в форке норма (напр. `vavsta_update_channel_name`). 1.0.4: пункт «Сообщить о проблеме» больше не показывает тост-заглушку (`vavsta_report_problem_stub` удалён) — он открывает репо `https://github.com/VaVsta/vavsta-messenger` через `openUrlInChromeCustomTab` (см. `PreferencesRootNode`).
 
 ## OTA-апдейтер (свой, не Squirrel)
 Всё живёт в `features/preferences/impl/.../about/`:
@@ -154,7 +154,7 @@ We wrap the `matrix-rust-sdk` to isolate the UI from the underlying SDK.
 
 **Подпись:** buildType `release` подписывается `app/signature/debug.keystore` (тот же, что у 1.0, сертификат `b0b051dc…`). Ключ менять нельзя — иначе OTA не встанет поверх установленной сборки.
 
-Прод сейчас: **1.0.3**, `versionCode` 202609032 (1.0.2 = 202609022, 1.0.1 = 202609012, 1.0 = 202608042 — все в `/var/www/element/vavsta-messenger/`, откат = вернуть нужный `version.json.bak-*`). Локальный `version.json` в репо держать зеркалом пушнутой версии.
+Прод сейчас: **1.0.4**, `versionCode` 202609042 (1.0.3 = 202609032, 1.0.2 = 202609022, 1.0.1 = 202609012, 1.0 = 202608042 — все в `/var/www/element/vavsta-messenger/`, откат = вернуть нужный `version.json.bak-*`). Локальный `version.json` в репо держать зеркалом пушнутой версии.
 
 ### Security-чек 2026-09-28 (все поверхности — чисто/закрыто)
 - **Git:** в ветке только 8 локальных коммитов, один бранч `develop`, stash/тэгов нет. Скан добавленных строк по 15 паттернам (tokens, PEM, JWT, AWS/Goog, ключи юзера, LAN/VPS IP, пути машины) — ноль совпадений. `local.properties` в `.gitignore`, в истории нет.

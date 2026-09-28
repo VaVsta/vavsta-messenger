@@ -36,6 +36,9 @@ class PreferencesRootNode(
     private val directLogoutView: DirectLogoutView,
     private val emojiPickerRenderer: EmojiPickerRenderer,
 ) : Node(buildContext, plugins = plugins) {
+    // VaVsta: вместо апстримного экрана баг-репорта открываем репозиторий проекта на GitHub
+    private val vavstaGithubRepoUrl = "https://github.com/VaVsta/vavsta-messenger"
+
     interface Callback : Plugin {
         fun navigateToAddAccount()
         fun navigateToBugReport()
@@ -83,6 +86,13 @@ class PreferencesRootNode(
             onAddAccountClick = callback::navigateToAddAccount,
             onOpenAnalytics = callback::navigateToAnalyticsSettings,
             onOpenAbout = callback::navigateToAbout,
+            onOpenReportProblem = {
+                activity.openUrlInChromeCustomTab(
+                    null,
+                    darkTheme = isDark,
+                    url = vavstaGithubRepoUrl,
+                )
+            },
             onSecureBackupClick = callback::navigateToSecureBackup,
             onOpenDeveloperSettings = callback::navigateToDeveloperSettings,
             onOpenAdvancedSettings = callback::navigateToAdvancedSettings,

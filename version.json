@@ -1,9 +1,9 @@
 {
-  "versionCode": 202609032,
-  "versionName": "1.0.3",
-  "apkUrl": "https://chat.vavsta.ru/vavsta-messenger/vavsta-messenger-arm64-202609032.apk",
-  "sha256": "fa66f912ccfb7b9a67a2bc9ddf4ce90ba00e9d4aa195530921ff2d483fa45ced",
-  "sizeBytes": 117616020,
-  "publishedAt": "2026-09-28T16:25:00+00:00",
-  "notes": "Тестовая сборка для проверки OTA и вызова экрана разрешений на установку. ВАЖНО: на телефоне разрешение REQUEST_INSTALL_PACKAGES снято — установка 1.0.3 должна открыть системный экран разрешений (фикс 1.0.2)"
+  "versionCode": 202609042,
+  "versionName": "1.0.4",
+  "apkUrl": "https://chat.vavsta.ru/vavsta-messenger/vavsta-messenger-arm64-202609042.apk",
+  "sha256": "1727ac442bdb6ada4fbd032c3dac4481273816fc7945fbbb6ce631077eb43631",
+  "sizeBytes": 117615736,
+  "publishedAt": "2026-09-28T23:15:03+03:00",
+  "notes": "1.0.4: пункт «Сообщить о проблеме» открывает GitHub-репо"
 }
