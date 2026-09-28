@@ -80,5 +80,7 @@ class DefaultPreferencesEntryPointTest {
             .isEqualTo(PreferencesFlowNode.NavTarget.NotificationSettings)
         assertThat(PreferencesEntryPoint.InitialTarget.NotificationTroubleshoot.toNavTarget())
             .isEqualTo(PreferencesFlowNode.NavTarget.TroubleshootNotifications)
+        assertThat(PreferencesEntryPoint.InitialTarget.About.toNavTarget())
+            .isEqualTo(PreferencesFlowNode.NavTarget.About)
     }
 }

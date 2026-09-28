@@ -406,7 +406,23 @@ class RootFlowNode(
             is ResolvedIntent.OAuth -> onOAuthAction(resolvedIntent.oAuthAction)
             is ResolvedIntent.Permalink -> navigateTo(resolvedIntent.permalinkData)
             is ResolvedIntent.IncomingShare -> onIncomingShare(resolvedIntent.shareIntentData)
+            is ResolvedIntent.About -> onOpenAbout()
         }
+    }
+
+    /**
+     * Открывает экран «О VaVsta» по тапу на уведомление об обновлении.
+     *
+     * Экран живёт внутри залогиненной сессии, поэтому без неё заводить нечего — просто остаёмся на текущем экране.
+     */
+    private suspend fun onOpenAbout() {
+        val latestSessionId = sessionStore.getLatestSessionId()
+        if (latestSessionId == null) {
+            Timber.d("Can't open the About screen: no session is available")
+            return
+        }
+        Timber.d("Navigating to the About screen")
+        attachSession(latestSessionId).navigateToAbout()
     }
 
     private suspend fun onLoginLink(params: LoginParams) {

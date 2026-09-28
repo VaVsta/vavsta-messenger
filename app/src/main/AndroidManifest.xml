@@ -63,6 +63,12 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <!-- Тап по уведомлению фоновой проверки обновлений: открыть экран «О VaVsta». -->
+            <intent-filter>
+                <action android:name="ru.vavsta.messenger.action.OPEN_ABOUT" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
             <!-- Handle deep-link for notification ./tools/adb/deeplink.sh -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />

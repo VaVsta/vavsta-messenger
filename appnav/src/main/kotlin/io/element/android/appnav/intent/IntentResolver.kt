@@ -12,6 +12,7 @@ import android.content.Intent
 import dev.zacsweers.metro.Inject
 import io.element.android.features.login.api.LoginIntentResolver
 import io.element.android.features.login.api.LoginParams
+import io.element.android.features.preferences.api.UpdateCheckIntents
 import io.element.android.features.share.api.ShareIntentData
 import io.element.android.features.share.api.ShareIntentHandler
 import io.element.android.libraries.deeplink.api.DeeplinkData
@@ -28,6 +29,7 @@ sealed interface ResolvedIntent {
     data class Permalink(val permalinkData: PermalinkData) : ResolvedIntent
     data class Login(val params: LoginParams) : ResolvedIntent
     data class IncomingShare(val shareIntentData: ShareIntentData) : ResolvedIntent
+    data object About : ResolvedIntent
 }
 
 @Inject
@@ -40,6 +42,9 @@ class IntentResolver(
 ) {
     fun resolve(intent: Intent): ResolvedIntent? {
         if (intent.canBeIgnored()) return null
+
+        // Тап по фоновому уведомлению «Доступно обновление»: открыть экран «О VaVsta».
+        if (intent.action == UpdateCheckIntents.ACTION_OPEN_ABOUT) return ResolvedIntent.About
 
         // Coming from a notification?
         val deepLinkData = deeplinkParser.getFromIntent(intent)

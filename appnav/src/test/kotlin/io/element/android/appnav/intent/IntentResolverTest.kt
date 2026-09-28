@@ -15,6 +15,7 @@ import androidx.core.net.toUri
 import com.google.common.truth.Truth.assertThat
 import io.element.android.features.login.api.LoginParams
 import io.element.android.features.login.test.FakeLoginIntentResolver
+import io.element.android.features.preferences.api.UpdateCheckIntents
 import io.element.android.features.share.api.ShareIntentData
 import io.element.android.features.share.api.UriToShare
 import io.element.android.features.share.test.FakeShareIntentHandler
@@ -316,6 +317,28 @@ class IntentResolverTest : RobolectricTest() {
         }
         val result = sut.resolve(intent)
         assertThat(result).isEqualTo(ResolvedIntent.Login(aLoginParams))
+    }
+
+    @Test
+    fun `test resolve update notification intent`() {
+        val sut = createIntentResolver()
+        val intent = Intent(RuntimeEnvironment.getApplication(), Activity::class.java).apply {
+            action = UpdateCheckIntents.ACTION_OPEN_ABOUT
+        }
+        val result = sut.resolve(intent)
+        assertThat(result).isEqualTo(ResolvedIntent.About)
+    }
+
+    @Test
+    fun `test resolve update notification intent wins over a deep link`() {
+        val sut = createIntentResolver(
+            deeplinkParserResult = DeeplinkData.Root(A_SESSION_ID),
+        )
+        val intent = Intent(RuntimeEnvironment.getApplication(), Activity::class.java).apply {
+            action = UpdateCheckIntents.ACTION_OPEN_ABOUT
+        }
+        val result = sut.resolve(intent)
+        assertThat(result).isEqualTo(ResolvedIntent.About)
     }
 
     private fun createIntentResolver(

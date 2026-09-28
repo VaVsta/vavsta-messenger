@@ -31,6 +31,7 @@ import java.io.File
 class AboutPresenter(
     @ApplicationContext private val context: Context,
     private val buildMeta: BuildMeta,
+    private val updateInfoStore: UpdateInfoStore,
 ) : Presenter<AboutState> {
     @Composable
     override fun present(): AboutState {
@@ -43,7 +44,13 @@ class AboutPresenter(
         var downloadJob by remember { mutableStateOf<Job?>(null) }
         var availableUpdate by remember { mutableStateOf<UpdateInfo?>(null) }
         var pendingApk by remember { mutableStateOf<File?>(null) }
-        var autoChecked by remember { mutableStateOf(false) }
+
+        fun showUpdate(info: UpdateInfo) {
+            availableUpdate = info
+            latestVersionName = info.versionName
+            updateNotes = info.notes
+            updateStatus = UpdateUiStatus.UpdateAvailable
+        }
 
         fun checkUpdate() {
             if (checkJob?.isActive == true) return
@@ -59,11 +66,11 @@ class AboutPresenter(
                 if (info == null) {
                     updateStatus = UpdateUiStatus.Error
                 } else if (info.versionCode > installed) {
-                    availableUpdate = info
-                    latestVersionName = info.versionName
-                    updateNotes = info.notes
-                    updateStatus = UpdateUiStatus.UpdateAvailable
+                    // Кэш нужен и фоновой проверке, чтобы не показывать уведомление дважды.
+                    updateInfoStore.put(info)
+                    showUpdate(info)
                 } else {
+                    updateInfoStore.clear()
                     updateStatus = UpdateUiStatus.UpToDate
                 }
             }
@@ -101,10 +108,14 @@ class AboutPresenter(
             }
         }
 
-        // Проверяем обновления сами при открытии экрана, но только один раз за его жизнь.
+        // При открытии экрана сначала показываем то, что уже нашла фоновая проверка, — без сетевого запроса.
+        // Если в кэше ничего нет, проверяем сами.
         LaunchedEffect(Unit) {
-            if (!autoChecked) {
-                autoChecked = true
+            val installed = UpdateChecker.installedVersionCode(context)
+            val cached = updateInfoStore.get()
+            if (cached != null && cached.versionCode > installed) {
+                showUpdate(cached)
+            } else {
                 checkUpdate()
             }
         }

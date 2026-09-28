@@ -31,6 +31,10 @@ interface PreferencesEntryPoint : FeatureEntryPoint {
 
         @Parcelize
         data object DeveloperSettings : InitialTarget
+
+        /** Экран «О VaVsta»: открывается извне, по таку на уведомление об обновлении. */
+        @Parcelize
+        data object About : InitialTarget
     }
 
     data class Params(val initialElement: InitialTarget) : NodeInputs
@@ -60,4 +64,15 @@ interface PreferencesEntryPoint : FeatureEntryPoint {
     interface DeveloperSettingsCallback : Plugin {
         fun onDone()
     }
+}
+
+/**
+ * Intent-контракт фоновой проверки обновлений.
+ *
+ * Экран About лежит внутри залогиненной сессии, поэтому уведомление не может открыть его напрямую:
+ * оно шлёт [ACTION_OPEN_ABOUT] в [io.element.android.x.MainActivity], а уже тот разбирает intent и
+ * заводит навигацию на [PreferencesEntryPoint.InitialTarget.About].
+ */
+object UpdateCheckIntents {
+    const val ACTION_OPEN_ABOUT = "ru.vavsta.messenger.action.OPEN_ABOUT"
 }

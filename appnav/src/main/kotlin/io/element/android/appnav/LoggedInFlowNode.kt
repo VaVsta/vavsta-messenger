@@ -175,6 +175,16 @@ class LoggedInFlowNode(
         fun navigateToAddAccount()
     }
 
+    /**
+     * Открывает экран «О VaVsta» изнутри уже открытой сессии.
+     *
+     * Нужен для тапа по уведомлению фоновой проверки обновлений: [io.element.android.x.MainActivity]
+     * получит intent и позовёт сюда, минуя ручной навигационный путь до настроек.
+     */
+    fun navigateToAbout() {
+        backstack.push(NavTarget.Settings(PreferencesEntryPoint.InitialTarget.About))
+    }
+
     private val callback: Callback = callback()
     private val loggedInFlowProcessor = LoggedInEventProcessor(
         snackbarDispatcher = snackbarDispatcher,
