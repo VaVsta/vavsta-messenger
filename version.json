@@ -1,9 +1,9 @@
 {
-  "versionCode": 202609022,
-  "versionName": "1.0.2",
-  "apkUrl": "https://chat.vavsta.ru/vavsta-messenger/vavsta-messenger-arm64-202609022.apk",
-  "sha256": "d53efdbedfce7dca9fa59c2bc2cdd0ae06a70ac8b0ecab5a2e0eaf0f846aa042",
+  "versionCode": 202609032,
+  "versionName": "1.0.3",
+  "apkUrl": "https://chat.vavsta.ru/vavsta-messenger/vavsta-messenger-arm64-202609032.apk",
+  "sha256": "fa66f912ccfb7b9a67a2bc9ddf4ce90ba00e9d4aa195530921ff2d483fa45ced",
   "sizeBytes": 117616020,
-  "publishedAt": "2026-09-28T14:15:00+00:00",
-  "notes": "Исправлен вызов экрана разрешений на установку: добавлен FLAG_ACTIVITY_NEW_TASK, цепочка запасных intent-ов вместо молчаливой ошибки. Фоновая проверка обновлений раз в сутки и при запуске"
+  "publishedAt": "2026-09-28T16:25:00+00:00",
+  "notes": "Тестовая сборка для проверки OTA и вызова экрана разрешений на установку. ВАЖНО: на телефоне разрешение REQUEST_INSTALL_PACKAGES снято — установка 1.0.3 должна открыть системный экран разрешений (фикс 1.0.2)"
 }
