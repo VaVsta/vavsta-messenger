@@ -36,6 +36,9 @@ class OnBoardingNode(
 ) {
     interface Callback : Plugin {
         fun navigateToSignUpFlow()
+
+        /** VaVsta: регистрация по логину/паролю (если у сервера нет OAuth). */
+        fun navigateToCreateAccount(homeserverUrl: String)
         fun navigateToSignInFlow(mustChooseAccountProvider: Boolean)
         fun navigateToQrCode()
         fun navigateToBugReport()
@@ -67,11 +70,21 @@ class OnBoardingNode(
             state = state,
             modifier = modifier,
             onSignIn = callback::navigateToSignInFlow,
-            onCreateAccount = callback::navigateToSignUpFlow,
+            onCreateAccount = {
+                // VaVsta: выбор провайдера при регистрации убран — в форке задан свой
+                // домашний сервер, поэтому сразу открываем форму регистрации.
+                val homeserverUrl = state.defaultAccountProvider
+                if (homeserverUrl != null) {
+                    callback.navigateToCreateAccount(homeserverUrl)
+                } else {
+                    callback.navigateToSignUpFlow()
+                }
+            },
             onSignInWithQrCode = callback::navigateToQrCode,
             onReportProblem = callback::navigateToBugReport,
             onOAuthDetails = callback::navigateToOAuth,
             onNeedLoginPassword = callback::navigateToLoginPassword,
+            onNeedCreateAccount = callback::navigateToCreateAccount,
             onLearnMoreClick = { openLearnMorePage(context) },
             onBackClick = callback::onDone,
             onDeveloperSettingsClick = callback::navigateToDeveloperSettings,

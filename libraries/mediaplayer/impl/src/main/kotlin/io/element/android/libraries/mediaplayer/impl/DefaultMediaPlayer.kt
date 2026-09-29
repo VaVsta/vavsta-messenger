@@ -15,6 +15,7 @@ import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.SingleIn
 import io.element.android.libraries.audio.api.AudioFocus
 import io.element.android.libraries.audio.api.AudioFocusRequester
+import io.element.android.libraries.audio.api.ProximityAudioRouter
 import io.element.android.libraries.di.RoomScope
 import io.element.android.libraries.di.annotations.SessionCoroutineScope
 import io.element.android.libraries.mediaplayer.api.MediaPlayer
@@ -41,6 +42,7 @@ class DefaultMediaPlayer(
     @SessionCoroutineScope
     private val sessionCoroutineScope: CoroutineScope,
     private val audioFocus: AudioFocus,
+    private val proximityAudioRouter: ProximityAudioRouter,
 ) : MediaPlayer {
     private val listener = object : SimplePlayer.Listener {
         override fun onIsPlayingChanged(isPlaying: Boolean) {
@@ -53,8 +55,12 @@ class DefaultMediaPlayer(
             }
             if (isPlaying) {
                 job = sessionCoroutineScope.launch { updateCurrentPosition() }
+                // VaVsta: для голосового сообщения телефон у уха должен звучать через
+                // разговорный динамик (см. DefaultProximityAudioRouter).
+                if (isVoiceMedia) proximityAudioRouter.start()
             } else {
                 audioFocus.releaseAudioFocus()
+                proximityAudioRouter.stop()
                 job?.cancel()
             }
         }
@@ -107,6 +113,7 @@ class DefaultMediaPlayer(
         mimeType: String,
         startPositionMs: Long,
     ): MediaPlayer.State {
+        currentMimeType = mimeType
         // Must pause here otherwise if the player was playing it would keep on playing the new media item.
         player.pause()
         player.clearMediaItems()
@@ -164,8 +171,16 @@ class DefaultMediaPlayer(
     }
 
     override fun close() {
+        proximityAudioRouter.stop()
         player.release()
     }
+
+    /** Текущий mime-тип медиа: по нему решаем, включаем ли proximity для уха. */
+    private var currentMimeType: String? = null
+
+    /** Голосовое — это аудио. Видео и прочее не трогаем. */
+    private val isVoiceMedia: Boolean
+        get() = currentMimeType?.startsWith("audio/") == true
 
     private suspend fun updateCurrentPosition() {
         while (true) {

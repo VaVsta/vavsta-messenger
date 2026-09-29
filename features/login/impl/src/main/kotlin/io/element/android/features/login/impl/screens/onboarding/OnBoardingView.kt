@@ -70,6 +70,7 @@ fun OnBoardingView(
     onCreateAccount: () -> Unit,
     onOAuthDetails: (OAuthDetails) -> Unit,
     onNeedLoginPassword: () -> Unit,
+    onNeedCreateAccount: (homeserverUrl: String) -> Unit,
     onLearnMoreClick: () -> Unit,
     onReportProblem: () -> Unit,
     modifier: Modifier = Modifier,
@@ -83,6 +84,7 @@ fun OnBoardingView(
             onLearnMoreClick = onLearnMoreClick,
             onOAuthDetails = onOAuthDetails,
             onNeedLoginPassword = onNeedLoginPassword,
+            onNeedCreateAccount = onNeedCreateAccount,
         )
         LocalNetworkPermissionDialogView(
             dialog = state.loginModeState.localNetworkPermissionDialog,
@@ -303,7 +305,8 @@ private fun OnBoardingButtons(
             )
         } else {
             Button(
-                text = stringResource(id = R.string.screen_onboarding_sign_in_to, defaultAccountProvider),
+                // VaVsta: без адреса сервера в подписи — в форке он всегда свой, один.
+                text = stringResource(id = R.string.screen_onboarding_sign_in_to),
                 showProgress = isLoading,
                 onClick = {
                     state.eventSink(OnBoardingEvent.OnSignIn(defaultAccountProvider))
@@ -363,6 +366,7 @@ internal fun OnBoardingViewPreview(
         onReportProblem = {},
         onOAuthDetails = {},
         onNeedLoginPassword = {},
+        onNeedCreateAccount = { },
         onLearnMoreClick = {},
     )
 }

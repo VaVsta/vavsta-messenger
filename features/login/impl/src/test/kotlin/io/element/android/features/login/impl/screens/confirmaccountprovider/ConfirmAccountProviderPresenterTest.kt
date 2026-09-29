@@ -19,7 +19,6 @@ import io.element.android.features.login.impl.accountprovider.anAccountProviderD
 import io.element.android.features.login.impl.changeserver.ChangeServerPresenter
 import io.element.android.features.login.impl.localnetwork.LocalNetworkPermissionGate
 import io.element.android.features.login.impl.login.LoginMode
-import io.element.android.features.login.impl.screens.createaccount.AccountCreationNotSupported
 import io.element.android.features.login.impl.screens.onboarding.createLoginModePresenter
 import io.element.android.libraries.architecture.AsyncData
 import io.element.android.libraries.matrix.api.auth.MatrixAuthenticationService
@@ -262,10 +261,17 @@ class ConfirmAccountProviderPresenterTest {
     }
 
     @Test
-    fun `present - confirm account creation without oidc generates an error`() = runTest {
+    fun `present - confirm account creation without oidc asks the view to show the create account form`() = runTest {
+        // VaVsta: раньше тут был AccountCreationNotSupported, теперь для серверов без OAuth
+        // показываем собственную форму регистрации по логину/паролю.
         val authenticationService = FakeMatrixAuthenticationService(
             setHomeserverResult = {
-                Result.success(aMatrixHomeServerDetails(supportsPasswordLogin = true))
+                Result.success(
+                    aMatrixHomeServerDetails(
+                        url = AuthenticationConfig.MATRIX_ORG_URL,
+                        supportsPasswordLogin = true,
+                    )
+                )
             },
         )
         val presenter = createConfirmAccountProviderPresenter(
@@ -275,13 +281,9 @@ class ConfirmAccountProviderPresenterTest {
         presenter.test {
             val initialState = awaitItem()
             initialState.eventSink(ConfirmAccountProviderEvent.Continue(AuthenticationConfig.MATRIX_ORG_URL))
-            // Check an error was returned
-            val submittedState = awaitLoginMode { it is AsyncData.Failure }
-            assertThat(submittedState.loginModeState.loginMode.errorOrNull()).isInstanceOf(AccountCreationNotSupported::class.java)
-            // Assert the error is then cleared
-            submittedState.eventSink(ConfirmAccountProviderEvent.ClearError)
-            val clearedState = awaitLoginMode { it is AsyncData.Uninitialized }
-            assertThat(clearedState.loginModeState.loginMode).isEqualTo(AsyncData.Uninitialized)
+            val submittedState = awaitLoginMode { it is AsyncData.Success }
+            assertThat(submittedState.loginModeState.loginMode)
+                .isEqualTo(AsyncData.Success(LoginMode.CreateAccount(AuthenticationConfig.MATRIX_ORG_URL)))
             cancelAndIgnoreRemainingEvents()
         }
     }

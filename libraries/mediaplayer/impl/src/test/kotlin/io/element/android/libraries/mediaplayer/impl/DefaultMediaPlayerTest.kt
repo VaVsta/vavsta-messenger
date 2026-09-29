@@ -14,8 +14,10 @@ import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import io.element.android.libraries.audio.api.AudioFocus
 import io.element.android.libraries.audio.api.AudioFocusRequester
+import io.element.android.libraries.audio.api.ProximityAudioRouter
 import io.element.android.libraries.mediaplayer.api.MediaPlayer
 import io.element.android.libraries.mediaplayer.test.FakeAudioFocus
+import io.element.android.libraries.mediaplayer.test.FakeProximityAudioRouter
 import io.element.android.tests.testutils.lambda.lambdaRecorder
 import io.element.android.tests.testutils.lambda.value
 import kotlinx.coroutines.TimeoutCancellationException
@@ -419,12 +421,82 @@ class DefaultMediaPlayerTest {
         }
     }
 
+    @Test
+    fun `playing a voice message switches audio to the earpiece via the proximity sensor`() = runTest {
+        val startProximity = lambdaRecorder<Unit> {}
+        val stopProximity = lambdaRecorder<Unit> {}
+        val player = fakeReadyPlayer()
+        val sut = createDefaultMediaPlayer(
+            simplePlayer = player,
+            audioFocus = FakeAudioFocus(requestAudioFocusResult = { _, _ -> }, releaseAudioFocusResult = {}),
+            proximityAudioRouter = FakeProximityAudioRouter(
+                startResult = startProximity,
+                stopResult = stopProximity,
+            ),
+        )
+        sut.setMedia("uri", "mediaId", "audio/ogg")
+        // Играет голосовое — роутер включился
+        player.simulateIsPlayingChanged(true)
+        startProximity.assertions().isCalledOnce()
+        stopProximity.assertions().isNeverCalled()
+        // Умолчало — роутер выключился
+        player.simulateIsPlayingChanged(false)
+        stopProximity.assertions().isCalledOnce()
+        // Снова играет, потом плеер закрыли — на всякий случай отключились
+        player.simulateIsPlayingChanged(true)
+        startProximity.assertions().isCalledExactly(2)
+        sut.close()
+        stopProximity.assertions().isCalledExactly(2)
+    }
+
+    @Test
+    fun `playing a video does not touch the proximity audio routing`() = runTest {
+        val startProximity = lambdaRecorder<Unit> {}
+        val stopProximity = lambdaRecorder<Unit> {}
+        val player = fakeReadyPlayer()
+        val sut = createDefaultMediaPlayer(
+            simplePlayer = player,
+            audioFocus = FakeAudioFocus(requestAudioFocusResult = { _, _ -> }, releaseAudioFocusResult = {}),
+            proximityAudioRouter = FakeProximityAudioRouter(
+                startResult = startProximity,
+                stopResult = stopProximity,
+            ),
+        )
+        sut.setMedia("uri", "mediaId", "video/mp4")
+        // Видео proximity не включает…
+        player.simulateIsPlayingChanged(true)
+        startProximity.assertions().isNeverCalled()
+        // …а на паузе роутер всё равно дёргается, чтобы ничего не осталось висеть включённым.
+        player.simulateIsPlayingChanged(false)
+        stopProximity.assertions().isCalledOnce()
+    }
+
+    /** Плеер, который сразу отвечает готовностью на setMedia(). */
+    private fun fakeReadyPlayer(releaseLambda: () -> Unit = {}): FakeSimplePlayer {
+        var player: FakeSimplePlayer? = null
+        player = FakeSimplePlayer(
+            playLambda = {},
+            pauseLambda = {},
+            isPlayingLambda = { false },
+            clearMediaItemsLambda = {},
+            setMediaItemLambda = { _, _ -> },
+            prepareLambda = {
+                player?.simulatePlaybackStateChanged(Player.STATE_READY)
+                player?.simulateMediaItemTransition(aMediaItem)
+            },
+            releaseLambda = releaseLambda,
+        )
+        return player
+    }
+
     private fun TestScope.createDefaultMediaPlayer(
         simplePlayer: SimplePlayer = FakeSimplePlayer(),
         audioFocus: AudioFocus = FakeAudioFocus(),
+        proximityAudioRouter: ProximityAudioRouter = FakeProximityAudioRouter(startResult = {}, stopResult = {}),
     ): DefaultMediaPlayer = DefaultMediaPlayer(
         player = simplePlayer,
         sessionCoroutineScope = backgroundScope,
         audioFocus = audioFocus,
+        proximityAudioRouter = proximityAudioRouter,
     )
 }

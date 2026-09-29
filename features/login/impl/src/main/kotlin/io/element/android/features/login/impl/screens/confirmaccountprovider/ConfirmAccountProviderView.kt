@@ -73,6 +73,7 @@ fun ConfirmAccountProviderView(
     state: ConfirmAccountProviderState,
     onOAuthDetails: (OAuthDetails) -> Unit,
     onNeedLoginPassword: () -> Unit,
+    onNeedCreateAccount: (homeserverUrl: String) -> Unit,
     onLearnMoreClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -229,6 +230,7 @@ fun ConfirmAccountProviderView(
         onLearnMoreClick = onLearnMoreClick,
         onOAuthDetails = onOAuthDetails,
         onNeedLoginPassword = onNeedLoginPassword,
+        onNeedCreateAccount = onNeedCreateAccount,
     )
 
     LocalNetworkPermissionDialogView(
@@ -274,6 +276,7 @@ internal fun ConfirmAccountProviderViewPreview(
         state = state,
         onOAuthDetails = {},
         onNeedLoginPassword = {},
+        onNeedCreateAccount = { },
         onLearnMoreClick = {},
     )
 }

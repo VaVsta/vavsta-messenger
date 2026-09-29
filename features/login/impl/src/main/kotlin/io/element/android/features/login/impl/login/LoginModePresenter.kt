@@ -19,7 +19,6 @@ import io.element.android.features.login.impl.localnetwork.LocalNetworkPermissio
 import io.element.android.features.login.impl.screens.chooseaccountprovider.ChooseAccountProviderPresenter
 import io.element.android.features.login.impl.screens.classic.loginwithclassic.LoginWithClassicPresenter
 import io.element.android.features.login.impl.screens.confirmaccountprovider.ConfirmAccountProviderPresenter
-import io.element.android.features.login.impl.screens.createaccount.AccountCreationNotSupported
 import io.element.android.features.login.impl.screens.onboarding.OnBoardingPresenter
 import io.element.android.libraries.architecture.AsyncData
 import io.element.android.libraries.architecture.Presenter
@@ -93,18 +92,17 @@ class LoginModePresenter(
                         authenticationService.getOAuthUrl(prompt = oAuthPrompt, loginHint = request.loginHint).getOrThrow()
                     )
                 }
-                request.isAccountCreation -> throw AccountCreationNotSupported()
+                // VaVsta: без OAuth (наш Synapse без MAS) апстрим просто ругается «регистрация невозможна».
+                // Вместо этого идём в свою форму регистрации по логину/паролю.
+                request.isAccountCreation -> LoginMode.CreateAccount(
+                    homeserverUrl = matrixHomeServerDetails.url,
+                )
                 matrixHomeServerDetails.supportsPasswordLogin -> LoginMode.PasswordLogin
                 else -> error("Unsupported authentication flow")
             }
         }.runCatchingUpdatingState(
             state = loginMode,
-            errorTransform = {
-                when (it) {
-                    is AccountCreationNotSupported -> it
-                    else -> ChangeServerError.from(it)
-                }
-            }
+            errorTransform = { ChangeServerError.from(it) }
         )
     }
 

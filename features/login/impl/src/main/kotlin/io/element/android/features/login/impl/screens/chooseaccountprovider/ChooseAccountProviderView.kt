@@ -49,6 +49,7 @@ import io.element.android.libraries.designsystem.utils.scaffoldScrollableContent
 import io.element.android.libraries.matrix.api.auth.OAuthDetails
 import io.element.android.libraries.permissions.api.localnetwork.LocalNetworkPermissionDialogView
 import io.element.android.libraries.ui.strings.CommonStrings
+import timber.log.Timber
 
 @Composable
 fun ChooseAccountProviderView(
@@ -136,6 +137,10 @@ fun ChooseAccountProviderView(
                 onLearnMoreClick = onLearnMoreClick,
                 onOAuthDetails = onOAuthDetails,
                 onNeedLoginPassword = onNeedLoginPassword,
+                // VaVsta: этот экран только для входа, регистрация тут невозможна.
+                onNeedCreateAccount = { homeserverUrl ->
+                    Timber.e("Unexpected account creation request from the sign in screen: %s", homeserverUrl)
+                },
             )
         }
     }

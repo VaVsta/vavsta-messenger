@@ -194,7 +194,7 @@ class OnBoardingPresenterTest {
             awaitItem().also {
                 assertThat(it.defaultAccountProvider).isEqualTo(ACCOUNT_PROVIDER_FROM_LINK)
                 assertThat(it.canLoginWithQrCode).isFalse()
-                assertThat(it.canCreateAccount).isFalse()
+                assertThat(it.canCreateAccount).isTrue()
             }
         }
     }
@@ -239,7 +239,9 @@ class OnBoardingPresenterTest {
             awaitItem().also {
                 assertThat(it.defaultAccountProvider).isEqualTo(ACCOUNT_PROVIDER_FROM_CONFIG)
                 assertThat(it.canLoginWithQrCode).isTrue()
-                assertThat(it.canCreateAccount).isFalse()
+                // VaVsta: на принудительно заданном домашнем сервере кнопка регистрации нужна,
+                // иначе зарегистрироваться в форке невозможно.
+                assertThat(it.canCreateAccount).isTrue()
             }
         }
     }

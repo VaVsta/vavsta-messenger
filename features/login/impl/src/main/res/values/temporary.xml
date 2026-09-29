@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ VaVsta Messenger — регистрация аккаунта по логину/паролю (для homeserver'ов без OAuth).
+  ~ Форк: строки добавляем только сюда, элементский localazy не трогаем.
+  -->
+<resources>
+    <string name="vavsta_create_account_display_name">Display name</string>
+    <string name="vavsta_create_account_display_name_hint">Optional — how other people will see you</string>
+    <string name="vavsta_create_account_password_confirm">Confirm password</string>
+    <string name="vavsta_create_account_error_invalid_username">Username can only contain a-z, 0-9 and = _ - . / +</string>
+    <string name="vavsta_create_account_error_passwords_mismatch">Passwords don\'t match</string>
+    <string name="vavsta_create_account_error_username_taken">This username is already taken</string>
+    <string name="vavsta_create_account_error_weak_password">The server rejected this password as too weak</string>
+    <string name="vavsta_create_account_error_registration_disabled">Registration is disabled on this server</string>
+    <string name="vavsta_create_account_error_interactive_auth">This server asks for extra verification (captcha or email) — sign up on the web instead</string>
+    <string name="vavsta_create_account_error_login_failed">The account was created, but sign-in failed. Try logging in.</string>
+    <string name="vavsta_create_account_error_unexpected">Something went wrong. Check your connection and try again</string>
+</resources>

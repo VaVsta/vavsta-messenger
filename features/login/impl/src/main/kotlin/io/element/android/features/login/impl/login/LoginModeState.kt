@@ -20,4 +20,11 @@ data class LoginModeState(
 sealed interface LoginMode {
     data object PasswordLogin : LoginMode
     data class OAuth(val oAuthDetails: OAuthDetails) : LoginMode
+
+    /**
+     * VaVsta: у homeserver'а нет OAuth, регистрируемся по логину/паролю сами.
+     */
+    data class CreateAccount(
+        val homeserverUrl: String,
+    ) : LoginMode
 }

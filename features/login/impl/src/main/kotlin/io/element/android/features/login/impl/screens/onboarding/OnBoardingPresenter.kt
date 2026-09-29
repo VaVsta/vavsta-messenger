@@ -133,7 +133,12 @@ class OnBoardingPresenter(
             defaultAccountProvider = defaultAccountProvider,
             mustChooseAccountProvider = mustChooseAccountProvider,
             canLoginWithQrCode = canLoginWithQrCode,
-            canCreateAccount = defaultAccountProvider == null && canConnectToAnyHomeserver && OnBoardingConfig.CAN_CREATE_ACCOUNT,
+            // VaVsta: в форке задан свой домашний сервер (forced account provider), поэтому
+            // условие апстрима (defaultAccountProvider == null) кнопку «Создать аккаунт»
+            // бы никогда не показало. Регистрация доступна на нашем chat.vavsta.ru и на любом
+            // сервере, к которому разрешено подключаться.
+            canCreateAccount = OnBoardingConfig.CAN_CREATE_ACCOUNT &&
+                (canConnectToAnyHomeserver || forcedAccountProvider != null),
             canReportBug = canReportBug && showReportBug,
             loginModeState = loginModeState,
             version = buildMeta.versionName,

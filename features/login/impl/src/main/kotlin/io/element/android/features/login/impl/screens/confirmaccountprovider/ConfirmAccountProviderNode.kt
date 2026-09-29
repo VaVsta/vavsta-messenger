@@ -45,6 +45,9 @@ class ConfirmAccountProviderNode(
     interface Callback : Plugin {
         fun navigateToLoginPassword()
         fun navigateToOAuth(oAuthDetails: OAuthDetails)
+
+        /** VaVsta: регистрация по логину/паролю (если у сервера нет OAuth). */
+        fun navigateToCreateAccount(homeserverUrl: String)
     }
 
     private val callback: Callback = callback()
@@ -58,6 +61,7 @@ class ConfirmAccountProviderNode(
             modifier = modifier,
             onOAuthDetails = callback::navigateToOAuth,
             onNeedLoginPassword = callback::navigateToLoginPassword,
+            onNeedCreateAccount = callback::navigateToCreateAccount,
             onLearnMoreClick = { openLearnMorePage(context) },
         )
     }

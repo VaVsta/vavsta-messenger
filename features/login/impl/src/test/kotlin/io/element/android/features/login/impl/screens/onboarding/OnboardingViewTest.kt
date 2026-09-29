@@ -138,7 +138,7 @@ class OnboardingViewTest : RobolectricTestParameter() {
                 eventSink = eventSink,
             ),
         )
-        val buttonText = activity!!.getString(R.string.screen_onboarding_sign_in_to, "element.io")
+        val buttonText = activity!!.getString(R.string.screen_onboarding_sign_in_to)
         onNodeWithText(buttonText).performClick()
         eventSink.assertSingle(OnBoardingEvent.OnSignIn("element.io"))
     }
@@ -244,6 +244,7 @@ class OnboardingViewTest : RobolectricTestParameter() {
         onReportProblem: () -> Unit = EnsureNeverCalled(),
         onOAuthDetails: (OAuthDetails) -> Unit = EnsureNeverCalledWithParam(),
         onNeedLoginPassword: () -> Unit = EnsureNeverCalled(),
+        onNeedCreateAccount: (String) -> Unit = EnsureNeverCalledWithParam(),
         onLearnMoreClick: () -> Unit = EnsureNeverCalled(),
     ) {
         setContent {
@@ -257,6 +258,7 @@ class OnboardingViewTest : RobolectricTestParameter() {
                 onReportProblem = onReportProblem,
                 onOAuthDetails = onOAuthDetails,
                 onNeedLoginPassword = onNeedLoginPassword,
+                onNeedCreateAccount = onNeedCreateAccount,
                 onLearnMoreClick = onLearnMoreClick,
             )
         }

@@ -55,6 +55,7 @@ import io.element.android.libraries.permissions.api.localnetwork.LocalNetworkPer
 import io.element.android.libraries.testtags.TestTags
 import io.element.android.libraries.testtags.testTag
 import io.element.android.libraries.ui.strings.CommonStrings
+import timber.log.Timber
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -203,6 +204,10 @@ Spacer(Modifier.height(4.dp))
         onLearnMoreClick = onLearnMoreClick,
         onOAuthDetails = onOAuthDetails,
         onNeedLoginPassword = onNeedLoginPassword,
+        // VaVsta: тут только импорт сессии из Element Classic, регистрация невозможна.
+        onNeedCreateAccount = { homeserverUrl ->
+            Timber.e("Unexpected account creation request from the Element Classic screen: %s", homeserverUrl)
+        },
     )
     LocalNetworkPermissionDialogView(
         dialog = state.loginModeState.localNetworkPermissionDialog,

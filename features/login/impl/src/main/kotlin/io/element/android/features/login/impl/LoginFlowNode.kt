@@ -35,6 +35,7 @@ import io.element.android.features.login.impl.qrcode.QrCodeLoginFlowNode
 import io.element.android.features.login.impl.screens.chooseaccountprovider.ChooseAccountProviderNode
 import io.element.android.features.login.impl.screens.classic.ClassicFlowNode
 import io.element.android.features.login.impl.screens.confirmaccountprovider.ConfirmAccountProviderNode
+import io.element.android.features.login.impl.screens.createaccount.CreateAccountNode
 import io.element.android.features.login.impl.screens.loginpassword.LoginPasswordNode
 import io.element.android.features.login.impl.screens.onboarding.OnBoardingNode
 import io.element.android.features.preferences.api.PreferencesEntryPoint
@@ -130,6 +131,12 @@ class LoginFlowNode(
         data class LoginPassword(
             val initialLogin: String = "",
         ) : NavTarget
+
+        /** VaVsta: регистрация по логину/паролю для серверов без OAuth. */
+        @Parcelize
+        data class CreateAccount(
+            val homeserverUrl: String,
+        ) : NavTarget
     }
 
     override fun resolve(navTarget: NavTarget, buildContext: BuildContext): Node {
@@ -160,6 +167,10 @@ class LoginFlowNode(
                         backstack.push(
                             NavTarget.ConfirmAccountProvider(isAccountCreation = true)
                         )
+                    }
+
+                    override fun navigateToCreateAccount(homeserverUrl: String) {
+                        backstack.push(NavTarget.CreateAccount(homeserverUrl))
                     }
 
                     override fun navigateToSignInFlow(mustChooseAccountProvider: Boolean) {
@@ -252,6 +263,10 @@ class LoginFlowNode(
                     override fun navigateToLoginPassword() {
                         backstack.push(NavTarget.LoginPassword())
                     }
+
+                    override fun navigateToCreateAccount(homeserverUrl: String) {
+                        backstack.push(NavTarget.CreateAccount(homeserverUrl))
+                    }
                 }
                 createNode<ConfirmAccountProviderNode>(buildContext, plugins = listOf(inputs, callback))
             }
@@ -260,6 +275,12 @@ class LoginFlowNode(
                     initialLogin = navTarget.initialLogin,
                 )
                 createNode<LoginPasswordNode>(buildContext, plugins = listOf(inputs))
+            }
+            is NavTarget.CreateAccount -> {
+                val inputs = CreateAccountNode.Inputs(
+                    homeserverUrl = navTarget.homeserverUrl,
+                )
+                createNode<CreateAccountNode>(buildContext, plugins = listOf(inputs))
             }
         }
     }
