@@ -1,9 +1,9 @@
 {
-  "versionCode": 202609072,
-  "versionName": "1.0.5-2",
-  "apkUrl": "https://chat.vavsta.ru/vavsta-messenger/vavsta-messenger-arm64-202609072.apk",
-  "sha256": "bed1db7d77cda7c009695b02d7512e244d95faf357f4eec7eec315a9df343b63",
+  "versionCode": 202609082,
+  "versionName": "1.0.5-3",
+  "apkUrl": "https://chat.vavsta.ru/vavsta-messenger/vavsta-messenger-arm64-202609082.apk",
+  "sha256": "a6bd0e38261aa00731b731be9195cf473f1aae53e6f90f14ea28112e48da4847",
   "sizeBytes": 117624276,
-  "publishedAt": "2026-09-30T01:11:59+03:00",
-  "notes": "1.0.5-2: экран гаснет у уха при прослушивании голосового, убрана задержка переключения аудио между динамиками"
+  "publishedAt": "2026-09-30T01:31:24+03:00",
+  "notes": "1.0.5-3: строка «Исходный код» в «О приложении» теперь кликабельная ссылка на репозиторий GitHub"
 }
