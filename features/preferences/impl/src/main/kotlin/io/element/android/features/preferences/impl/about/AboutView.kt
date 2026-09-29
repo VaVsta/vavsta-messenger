@@ -87,11 +87,7 @@ fun AboutView(
         ListItem(
             content = { Text("Исходный код") },
             supportingContent = { Text(state.sourceCodeUrl) },
-            onClick = {
-                if (state.sourceCodeUrl.isNotBlank() && state.sourceCodeUrl != "placement") {
-                    onOpenUrl(state.sourceCodeUrl)
-                }
-            },
+            onClick = { state.sourceCodeUrl.takeIf { it.isNotBlank() }?.let(onOpenUrl) },
         )
         ListItem(
             content = {

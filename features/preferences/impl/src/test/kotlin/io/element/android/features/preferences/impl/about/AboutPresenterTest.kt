@@ -45,6 +45,23 @@ class AboutPresenterTest {
     }
 
     @Test
+    fun `present - source code row points to the fork repository`() = runTest {
+        val presenter = AboutPresenter(
+            context = aContext(),
+            buildMeta = aBuildMeta(versionName = "1.0.5-3"),
+            updateInfoStore = emptyUpdateInfoStore(),
+        )
+        moleculeFlow(RecompositionMode.Immediate) {
+            presenter.present()
+        }.test {
+            val initialState = awaitItem()
+            // Раньше здесь стояла заглушка-«placement» — строка выглядела нерабочей.
+            assertThat(initialState.sourceCodeUrl).isEqualTo("https://github.com/VaVsta/vavsta-messenger")
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
     fun `present - shows the update cached by the background check without a network call`() = runTest {
         val store = mockk<UpdateInfoStore>()
         val cached = UpdateInfo(

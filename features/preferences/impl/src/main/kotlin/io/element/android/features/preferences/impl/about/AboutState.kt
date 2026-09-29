@@ -40,7 +40,7 @@ data class AboutState(
     val authorName: String = "Глюк (vavsta)",
     val authorTelegram: String = "@vavsta",
     val telegramUrl: String = "tg://resolve?domain=vavsta",
-    val sourceCodeUrl: String = "placement",
+    val sourceCodeUrl: String = "https://github.com/VaVsta/vavsta-messenger",
     val updateStatus: UpdateUiStatus = UpdateUiStatus.Unknown,
     val latestVersionName: String? = null,
     val updateNotes: String? = null,
