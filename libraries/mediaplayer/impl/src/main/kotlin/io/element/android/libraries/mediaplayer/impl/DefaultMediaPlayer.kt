@@ -57,10 +57,10 @@ class DefaultMediaPlayer(
                 job = sessionCoroutineScope.launch { updateCurrentPosition() }
                 // VaVsta: для голосового сообщения телефон у уха должен звучать через
                 // разговорный динамик (см. DefaultProximityAudioRouter).
-                if (isVoiceMedia) proximityAudioRouter.start()
+                startProximityIfNeeded()
             } else {
                 audioFocus.releaseAudioFocus()
-                proximityAudioRouter.stop()
+                stopProximity()
                 job?.cancel()
             }
         }
@@ -114,6 +114,9 @@ class DefaultMediaPlayer(
         startPositionMs: Long,
     ): MediaPlayer.State {
         currentMimeType = mimeType
+        // VaVsta: голосовой режим включаем до prepare(), иначе плеер успевает открыть
+        // аудиопоток в медиа-режиме и его приходится пересоздавать (задержка старта).
+        startProximityIfNeeded()
         // Must pause here otherwise if the player was playing it would keep on playing the new media item.
         player.pause()
         player.clearMediaItems()
@@ -131,6 +134,9 @@ class DefaultMediaPlayer(
     }
 
     override fun play() {
+        // VaVsta: голосовой режим включаем ДО старта воспроизведения — иначе плеер
+        // пересоздаёт аудиопоток уже во время игры, и звук «переключается» с задержкой.
+        startProximityIfNeeded()
         audioFocus.requestAudioFocus(
             requester = AudioFocusRequester.VoiceMessage,
             onFocusLost = {
@@ -171,8 +177,22 @@ class DefaultMediaPlayer(
     }
 
     override fun close() {
-        proximityAudioRouter.stop()
+        stopProximity()
         player.release()
+    }
+
+    /** Голосовой роутер нужен только для голосовых и включается один раз на сессию. */
+    private var proximityActive = false
+
+    private fun startProximityIfNeeded() {
+        if (!isVoiceMedia || proximityActive) return
+        proximityActive = true
+        proximityAudioRouter.start()
+    }
+
+    private fun stopProximity() {
+        proximityActive = false
+        proximityAudioRouter.stop()
     }
 
     /** Текущий mime-тип медиа: по нему решаем, включаем ли proximity для уха. */
