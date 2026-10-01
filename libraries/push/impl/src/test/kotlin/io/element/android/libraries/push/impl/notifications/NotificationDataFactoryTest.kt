@@ -82,7 +82,9 @@ class NotificationDataFactoryTest : RobolectricTest() {
             OneShotNotification(
                 notification = expectedNotification,
                 tag = "FALLBACK",
-                isNoisy = false,
+                // Форк: fallback-уведомление сигналит, иначе при включённом PIN
+                // все уведомления приходят без звука.
+                isNoisy = true,
                 timestamp = A_FALLBACK_EVENT.timestamp
             )
         )

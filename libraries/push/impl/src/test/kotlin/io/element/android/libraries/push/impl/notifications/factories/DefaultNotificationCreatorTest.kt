@@ -82,7 +82,10 @@ class DefaultNotificationCreatorTest : RobolectricTest() {
 
     @Test
     fun `test createFallbackNotification`() {
-        val sut = createNotificationCreator()
+        // Форк: fallback теперь громкий, поэтому спрашиваем enterprise-канал.
+        val sut = createNotificationCreator(
+            enterpriseService = FakeEnterpriseService(getNoisyNotificationChannelIdResult = { null }),
+        )
         val result = sut.createFallbackNotification(
             existingNotification = null,
             notificationAccountParams = aNotificationAccountParams(),

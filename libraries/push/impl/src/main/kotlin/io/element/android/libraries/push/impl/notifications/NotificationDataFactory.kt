@@ -151,7 +151,9 @@ class DefaultNotificationDataFactory(
         return OneShotNotification(
             tag = FALLBACK_NOTIFICATION_TAG,
             notification = notification,
-            isNoisy = false,
+            // Форк: см. NotificationCreator.createFallbackNotification — заглушка
+            // должна сигналить, иначе агрегат собирается в «беззвучный» канал.
+            isNoisy = true,
             timestamp = fallback.first().timestamp
         )
     }

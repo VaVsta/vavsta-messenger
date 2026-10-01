@@ -317,7 +317,11 @@ class DefaultNotificationCreator(
         val fallbackNotifiableEvent = fallbackNotifiableEvents.first()
         val channelId = notificationChannels.getChannelIdForMessage(
             sessionId = fallbackNotifiableEvent.sessionId,
-            noisy = false,
+            // Форк: раньше здесь стоял жёсткий noisy = false, и уведомление-заглушка
+            // (а она показывается всегда, когда в приложении настроен PIN) уходила в
+            // канал «Уведомления без звука» — тишина. PIN скрывает текст, но звучать
+            // заглушке не мешает, поэтому роли разделяем: текст скрыт, сигнал есть.
+            noisy = true,
         )
         val existingCounter = existingNotification
             ?.extras
