@@ -1,9 +1,9 @@
 {
-  "versionCode": 202609082,
-  "versionName": "1.0.5-3",
-  "apkUrl": "https://chat.vavsta.ru/vavsta-messenger/vavsta-messenger-arm64-202609082.apk",
-  "sha256": "a6bd0e38261aa00731b731be9195cf473f1aae53e6f90f14ea28112e48da4847",
-  "sizeBytes": 117624276,
-  "publishedAt": "2026-09-30T01:31:24+03:00",
-  "notes": "1.0.5-3: строка «Исходный код» в «О приложении» теперь кликабельная ссылка на репозиторий GitHub"
+  "versionCode": 202610012,
+  "versionName": "1.0.6",
+  "apkUrl": "https://chat.vavsta.ru/vavsta-messenger/vavsta-messenger-arm64-202610012.apk",
+  "sha256": "b4f059200b059620c5c697d5cb7e44c00a9b5b7e1ecef66099a3df62362f5b02",
+  "sizeBytes": 117668988,
+  "publishedAt": "2026-10-01T21:23:00+03:00",
+  "notes": "1.0.6: свой встроенный UnifiedPush-дистрибьютор (без Google, relay на chat.vavsta.ru/push), уведомления со звуком при заблокированном экране, русификация настроек уведомлений и меню разработчика"
 }
