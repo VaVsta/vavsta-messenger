@@ -25,8 +25,16 @@
   <string name="screen_change_server_error_unauthorized_homeserver_title">"Сервер %1$s не разрешен."</string>
   <string name="screen_change_server_form_header">"Адрес сервера"</string>
   <string name="screen_change_server_form_notice">"Введите доменное имя."</string>
+  <string name="screen_change_server_navigation_title_login">"Вход"</string>
+  <string name="screen_change_server_navigation_title_register">"Создать аккаунт"</string>
   <string name="screen_change_server_subtitle">"Какой адрес у вашего сервера?"</string>
+  <string name="screen_change_server_textfield_footer_login">"Если аккаунт выдан вашей компанией или сообществом, укажите другого провайдера (например: companyname.com)."</string>
+  <string name="screen_change_server_textfield_footer_register">"Создайте аккаунт на matrix.org бесплатно. Чтобы создать аккаунт у другого провайдера, укажите его (например: communityname.org)."</string>
+  <string name="screen_change_server_textfield_header">"Провайдер аккаунта"</string>
+  <string name="screen_change_server_textfield_placeholder">"example.com"</string>
   <string name="screen_change_server_title">"Выберите свой сервер"</string>
+  <string name="screen_change_server_title_login">"Введите провайдера аккаунта"</string>
+  <string name="screen_change_server_title_register">"Выберите провайдера аккаунта"</string>
   <string name="screen_create_account_title">"Создать аккаунт"</string>
   <string name="screen_login_error_deactivated_account">"Эта учетная запись была удалена."</string>
   <string name="screen_login_error_invalid_credentials">"Неверное имя пользователя и/или пароль"</string>
@@ -108,13 +116,13 @@
   <string name="screen_server_confirmation_title_register">"Вы собираетесь создать аккаунт на %1$s"</string>
   <string name="vavsta_create_account_display_name">"Отображаемое имя"</string>
   <string name="vavsta_create_account_display_name_hint">"Необязательно — так вас увидят другие"</string>
-  <string name="vavsta_create_account_password_confirm">"Повторите пароль"</string>
+  <string name="vavsta_create_account_error_interactive_auth">"Сервер требует дополнительную проверку (капча или почта) — регистрируйтесь на сайте"</string>
   <string name="vavsta_create_account_error_invalid_username">"Имя пользователя: только a-z, 0-9 и символы = _ - . / +"</string>
+  <string name="vavsta_create_account_error_login_failed">"Аккаунт создан, но вход не удался. Попробуйте войти."</string>
   <string name="vavsta_create_account_error_passwords_mismatch">"Пароли не совпадают"</string>
+  <string name="vavsta_create_account_error_registration_disabled">"Регистрация на этом сервере отключена"</string>
+  <string name="vavsta_create_account_error_unexpected">"Что-то пошло не так. Проверьте соединение и попробуйте снова"</string>
   <string name="vavsta_create_account_error_username_taken">"Это имя уже занято"</string>
   <string name="vavsta_create_account_error_weak_password">"Сервер отверг этот пароль как слишком простой"</string>
-  <string name="vavsta_create_account_error_registration_disabled">"Регистрация на этом сервере отключена"</string>
-  <string name="vavsta_create_account_error_interactive_auth">"Сервер требует дополнительную проверку (капча или почта) — регистрируйтесь на сайте"</string>
-  <string name="vavsta_create_account_error_login_failed">"Аккаунт создан, но вход не удался. Попробуйте войти."</string>
-  <string name="vavsta_create_account_error_unexpected">"Что-то пошло не так. Проверьте соединение и попробуйте снова"</string>
+  <string name="vavsta_create_account_password_confirm">"Повторите пароль"</string>
 </resources>

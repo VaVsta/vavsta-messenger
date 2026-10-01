@@ -22,6 +22,11 @@
     <item quantity="few">"У Вас %d новых сообщения."</item>
     <item quantity="many">"У Вас %d новых сообщений."</item>
   </plurals>
+  <plurals name="notification_gallery_body">
+    <item quantity="one">"Отправлено вложений: %1$d"</item>
+    <item quantity="few">"Отправлено вложений: %1$d"</item>
+    <item quantity="many">"Отправлено вложений: %1$d"</item>
+  </plurals>
   <string name="notification_incoming_audio_call">"📞 Входящий вызов"</string>
   <string name="notification_incoming_call">"📹 Входящий вызов"</string>
   <string name="notification_inline_reply_failed">"** Не удалось отправить - пожалуйста, откройте комнату"</string>
@@ -34,6 +39,8 @@
   </plurals>
   <string name="notification_invite_body">"Пригласил(а) Вас в чат"</string>
   <string name="notification_invite_body_with_sender">"%1$s пригласил(а) Вас в чат"</string>
+  <string name="notification_knock_request_body">"Запросил присоединиться"</string>
+  <string name="notification_live_location_started_body">"Начал показывать своё местоположение"</string>
   <string name="notification_mentioned_you_body">"Упомянул(а) вас: %1$s"</string>
   <string name="notification_new_messages">"Новые сообщения"</string>
   <plurals name="notification_new_messages_for_room">
@@ -106,6 +113,7 @@
   <string name="troubleshoot_notifications_test_push_loop_back_failure_2">"Ошибка: %1$s."</string>
   <string name="troubleshoot_notifications_test_push_loop_back_failure_3">"Ошибка, невозможно протестировать отправку."</string>
   <string name="troubleshoot_notifications_test_push_loop_back_failure_4">"Ошибка, тайм-аут ожидания push-уведомления."</string>
+  <string name="troubleshoot_notifications_test_push_loop_back_failure_rate_limit">"Ошибка: push-шлюз ограничивает частоту запросов для этого устройства, поэтому уведомления будут приходить ненадёжно. Настройте другой push-шлюз."</string>
   <string name="troubleshoot_notifications_test_push_loop_back_success">"Обратная отправка push-уведомления, заняла %1$d мс."</string>
   <string name="troubleshoot_notifications_test_push_loop_back_title">"Тест обратной отправки push-уведомления"</string>
 </resources>

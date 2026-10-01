@@ -7,6 +7,11 @@
   <string name="crypto_event_authenticity_unknown_device">"Зашифровано неизвестным или удаленным устройством."</string>
   <string name="crypto_event_authenticity_unsigned_device">"Зашифровано устройством, не проверенным его владельцем."</string>
   <string name="crypto_event_authenticity_unverified_identity">"Зашифровано непроверенным пользователем."</string>
+  <string name="error_sending_failure_invalid_mime_type">"Неверный тип файла: %s"</string>
+  <string name="error_sending_failure_missing_media_content">"Отсутствует содержимое медиа"</string>
+  <string name="error_sending_failure_other">"Детали ошибки: %s"</string>
+  <string name="error_sending_failure_sending_from_unverified_device">"Отправка с неподтверждённого устройства"</string>
+  <string name="error_sending_failure_unknown">"Неизвестная ошибка"</string>
   <string name="screen_image_edition_a11y_flip_image_horizontally">"Перевернуть изображение по горизонтали"</string>
   <string name="screen_image_edition_a11y_flip_image_horizontally_state_flipped">"Перевернуто по горизонтали"</string>
   <string name="screen_image_edition_a11y_flip_image_horizontally_state_original">"Оригинал"</string>
@@ -73,6 +78,11 @@
   <string name="screen_room_timeline_reactions_show_more">"Показать больше"</string>
   <string name="screen_room_timeline_reactions_show_reactions_summary">"Показать сводку реакций"</string>
   <string name="screen_room_timeline_read_marker_title">"Новое"</string>
+  <plurals name="screen_room_timeline_redacted_messages">
+    <item quantity="one">"%1$d удалённое сообщение"</item>
+    <item quantity="few">"%1$d удалённых сообщения"</item>
+    <item quantity="many">"%1$d удалённых сообщений"</item>
+  </plurals>
   <plurals name="screen_room_timeline_state_changes">
     <item quantity="one">"%1$d изменение в комнате"</item>
     <item quantity="few">"%1$d изменения в комнате"</item>

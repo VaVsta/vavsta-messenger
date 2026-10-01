@@ -26,6 +26,7 @@ import io.element.android.features.preferences.impl.tasks.ClearCacheUseCase
 import io.element.android.libraries.architecture.Presenter
 import io.element.android.libraries.designsystem.theme.components.IconSource
 import io.element.android.libraries.featureflag.api.FeatureFlagService
+import io.element.android.features.preferences.impl.developer.FeatureFlagStrings
 import io.element.android.libraries.featureflag.api.FeatureFlags
 import io.element.android.libraries.featureflag.ui.model.FeatureUiModel
 import io.element.android.services.toolbox.api.strings.StringProvider
@@ -89,11 +90,15 @@ class LabsPresenter(
             key(enabledFeature.feature.key) {
                 val title = when (enabledFeature.feature) {
                     FeatureFlags.Threads -> stringProvider.getString(R.string.screen_labs_enable_threads)
-                    else -> enabledFeature.feature.title
+                    else -> FeatureFlagStrings.titleRes(enabledFeature.feature)
+                        ?.let(stringProvider::getString)
+                        ?: enabledFeature.feature.title
                 }
                 val description = when (enabledFeature.feature) {
                     FeatureFlags.Threads -> stringProvider.getString(R.string.screen_labs_enable_threads_description)
-                    else -> enabledFeature.feature.description
+                    else -> FeatureFlagStrings.descriptionRes(enabledFeature.feature)
+                        ?.let(stringProvider::getString)
+                        ?: enabledFeature.feature.description
                 }
                 val icon = when (enabledFeature.feature) {
                     FeatureFlags.Threads -> CompoundIcons.Threads()

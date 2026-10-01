@@ -18,6 +18,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import io.element.android.compound.theme.ElementTheme
+import io.element.android.features.preferences.impl.R
 import io.element.android.features.preferences.impl.developer.tracing.LogLevelItem
 import io.element.android.libraries.androidutils.system.copyToClipboard
 import io.element.android.libraries.designsystem.components.preferences.PreferenceCategory
@@ -42,17 +43,16 @@ fun AppDeveloperSettingsView(
     Column(
         modifier = modifier.fillMaxWidth(),
     ) {
-        // Note: this is OK to hardcode strings in this debug screen.
         PreferenceCategory(
-            title = "Feature flags",
+            title = stringResource(R.string.vavsta_dev_feature_flags),
             showTopDivider = false,
         ) {
             FeatureListContent(state)
         }
-        PreferenceCategory(title = "Rust SDK") {
+        PreferenceCategory(title = stringResource(R.string.vavsta_dev_rust_sdk)) {
             PreferenceDropdown(
-                title = "Tracing log level",
-                supportingText = "Requires app reboot",
+                title = stringResource(R.string.vavsta_dev_tracing_log_level),
+                supportingText = stringResource(R.string.vavsta_dev_requires_app_reboot),
                 selectedOption = state.tracingLogLevel.dataOrNull(),
                 options = LogLevelItem.entries.toImmutableList(),
                 onSelectOption = { logLevel ->
@@ -60,9 +60,9 @@ fun AppDeveloperSettingsView(
                 }
             )
         }
-        PreferenceCategory(title = "Enable trace logs per SDK feature") {
+        PreferenceCategory(title = stringResource(R.string.vavsta_dev_trace_logs_per_sdk_feature)) {
             Text(
-                text = "Requires app reboot",
+                text = stringResource(R.string.vavsta_dev_requires_app_reboot),
                 style = ElementTheme.typography.fontBodyMdRegular,
                 color = ElementTheme.colors.textSecondary,
                 modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 8.dp)
@@ -75,10 +75,10 @@ fun AppDeveloperSettingsView(
                 )
             }
         }
-        PreferenceCategory(title = "Crash") {
+        PreferenceCategory(title = stringResource(R.string.vavsta_dev_crash_category)) {
             ListItem(
                 content = {
-                    Text("Crash the app 💥")
+                    Text(stringResource(R.string.vavsta_dev_crash_the_app))
                 },
                 onClick = { error("This crash is a test.") }
             )

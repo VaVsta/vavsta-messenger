@@ -18,6 +18,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import dev.zacsweers.metro.Inject
+import io.element.android.features.preferences.impl.developer.FeatureFlagStrings
 import io.element.android.features.preferences.impl.developer.tracing.toLogLevel
 import io.element.android.features.preferences.impl.developer.tracing.toLogLevelItem
 import io.element.android.features.preferences.impl.model.EnabledFeature
@@ -29,6 +30,7 @@ import io.element.android.libraries.core.meta.BuildMeta
 import io.element.android.libraries.featureflag.api.FeatureFlagService
 import io.element.android.libraries.featureflag.ui.model.FeatureUiModel
 import io.element.android.libraries.preferences.api.store.AppPreferencesStore
+import io.element.android.services.toolbox.api.strings.StringProvider
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
@@ -41,6 +43,7 @@ import java.net.URL
 @Inject
 class AppDeveloperSettingsPresenter(
     private val featureFlagService: FeatureFlagService,
+    private val stringProvider: StringProvider,
     private val rageshakePresenter: Presenter<RageshakePreferencesState>,
     private val appPreferencesStore: AppPreferencesStore,
     private val buildMeta: BuildMeta,
@@ -125,10 +128,12 @@ class AppDeveloperSettingsPresenter(
         return enabledFeatures.map { enabledFeature ->
             key(enabledFeature.feature.key) {
                 remember(enabledFeature) {
+                    val feature = enabledFeature.feature
                     FeatureUiModel(
-                        key = enabledFeature.feature.key,
-                        title = enabledFeature.feature.title,
-                        description = enabledFeature.feature.description,
+                        key = feature.key,
+                        // Локализованный текст, если есть строка; иначе английский из enum
+                        title = FeatureFlagStrings.titleRes(feature)?.let(stringProvider::getString) ?: feature.title,
+                        description = FeatureFlagStrings.descriptionRes(feature)?.let(stringProvider::getString) ?: feature.description,
                         icon = null,
                         isEnabled = enabledFeature.isEnabled
                     )

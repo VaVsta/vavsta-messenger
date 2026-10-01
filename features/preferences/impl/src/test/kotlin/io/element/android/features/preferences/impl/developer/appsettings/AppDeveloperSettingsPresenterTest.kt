@@ -22,6 +22,7 @@ import io.element.android.tests.testutils.WarmUpRule
 import io.element.android.tests.testutils.lambda.lambdaRecorder
 import io.element.android.tests.testutils.lambda.value
 import io.element.android.tests.testutils.test
+import io.element.android.services.toolbox.test.strings.FakeStringProvider
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.junit.Rule
@@ -148,6 +149,7 @@ class AppDeveloperSettingsPresenterTest {
             featureFlagService = featureFlagService,
             rageshakePresenter = { aRageshakePreferencesState() },
             appPreferencesStore = preferencesStore,
+            stringProvider = FakeStringProvider(),
             buildMeta = aBuildMeta(
                 gitRevision = "1234567890",
                 gitBranchName = "feature/awesome-feature"
