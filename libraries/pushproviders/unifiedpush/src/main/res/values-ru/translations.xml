@@ -8,4 +8,7 @@
     <item quantity="many">"%1$d провайдеров найдено: %2$s."</item>
   </plurals>
   <string name="troubleshoot_notifications_test_unified_push_title">"Проверка UnifiedPush"</string>
+  <string name="vavsta_push_relay_title">"Получение уведомлений"</string>
+  <string name="vavsta_push_relay_body">"VaVsta Messenger держит соединение с сервером, чтобы присылать уведомления"</string>
+  <string name="vavsta_push_relay_channel_name">"Получение уведомлений"</string>
 </resources>

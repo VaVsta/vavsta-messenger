@@ -16,6 +16,7 @@ import io.element.android.libraries.core.meta.BuildMeta
 import io.element.android.libraries.matrix.api.MatrixClient
 import io.element.android.libraries.matrix.api.core.SessionId
 import io.element.android.libraries.matrix.api.exception.ClientException
+import io.element.android.libraries.matrix.api.pusher.PusherFormat
 import io.element.android.libraries.matrix.api.pusher.SetHttpPusherData
 import io.element.android.libraries.matrix.api.pusher.UnsetHttpPusherData
 import io.element.android.libraries.pushproviders.api.PusherSubscriber
@@ -41,6 +42,7 @@ class DefaultPusherSubscriber(
         matrixClient: MatrixClient,
         pushKey: String,
         gateway: String,
+        format: PusherFormat,
     ): Result<Unit> {
         val userDataStore = userPushStoreFactory.getOrCreate(matrixClient.sessionId)
         val isRegisteringAgain = userDataStore.getCurrentRegisteredPushKey() == pushKey
@@ -50,7 +52,7 @@ class DefaultPusherSubscriber(
         }
         return matrixClient.pushersService
             .setHttpPusher(
-                createHttpPusher(pushKey, gateway, matrixClient.sessionId)
+                createHttpPusher(pushKey, gateway, matrixClient.sessionId, format)
             )
             .onSuccess {
                 userDataStore.setCurrentRegisteredPushKey(pushKey)
@@ -70,6 +72,7 @@ class DefaultPusherSubscriber(
         pushKey: String,
         gateway: String,
         userId: SessionId,
+        format: PusherFormat,
     ): SetHttpPusherData =
         SetHttpPusherData(
             pushKey = pushKey,
@@ -84,6 +87,7 @@ class DefaultPusherSubscriber(
             url = gateway,
             defaultPayload = createDefaultPayload(pushClientSecret.getSecretForUser(userId)),
             append = false,
+            format = format,
         )
 
     /**

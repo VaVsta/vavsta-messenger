@@ -72,9 +72,11 @@ class DefaultUnifiedPushGatewayResolverTest {
         val sut = createDefaultUnifiedPushGatewayResolver(
             unifiedPushApiFactory = unifiedPushApiFactory
         )
-        val result = sut.getGateway("https://custom.url:123/some/path")
-        assertThat(unifiedPushApiFactory.baseUrlParameter).isEqualTo("https://custom.url:123")
-        assertThat(result).isEqualTo(UnifiedPushGatewayResolverResult.Success("https://custom.url:123/_matrix/push/v1/notify"))
+        // Базовый путь сохраняется: наш gateway живёт не в корне, а под /push.
+        // Последний сегмент (/token) отбрасывается, это часть endpoint'а.
+        val result = sut.getGateway("https://custom.url:123/some/path/token123")
+        assertThat(unifiedPushApiFactory.baseUrlParameter).isEqualTo("https://custom.url:123/some/path")
+        assertThat(result).isEqualTo(UnifiedPushGatewayResolverResult.Success("https://custom.url:123/some/path/_matrix/push/v1/notify"))
     }
 
     @Test
@@ -86,8 +88,22 @@ class DefaultUnifiedPushGatewayResolverTest {
             unifiedPushApiFactory = unifiedPushApiFactory
         )
         val result = sut.getGateway("http://custom.url:123/some/path")
-        assertThat(unifiedPushApiFactory.baseUrlParameter).isEqualTo("http://custom.url:123")
-        assertThat(result).isEqualTo(UnifiedPushGatewayResolverResult.Success("http://custom.url:123/_matrix/push/v1/notify"))
+        assertThat(unifiedPushApiFactory.baseUrlParameter).isEqualTo("http://custom.url:123/some")
+        assertThat(result).isEqualTo(UnifiedPushGatewayResolverResult.Success("http://custom.url:123/some/_matrix/push/v1/notify"))
+    }
+
+    @Test
+    fun `when the endpoint has no path, the root url is used`() = runTest {
+        val unifiedPushApiFactory = FakeUnifiedPushApiFactory(
+            discoveryResponse = matrixDiscoveryResponse
+        )
+        val sut = createDefaultUnifiedPushGatewayResolver(
+            unifiedPushApiFactory = unifiedPushApiFactory
+        )
+        // Старые endpoint'ы без пути должны работать как раньше.
+        val result = sut.getGateway("https://custom.url:123")
+        assertThat(unifiedPushApiFactory.baseUrlParameter).isEqualTo("https://custom.url:123")
+        assertThat(result).isEqualTo(UnifiedPushGatewayResolverResult.Success("https://custom.url:123/_matrix/push/v1/notify"))
     }
 
     @Test

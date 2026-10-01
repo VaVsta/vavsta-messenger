@@ -10,6 +10,7 @@ package io.element.android.libraries.pushproviders.api
 
 import io.element.android.libraries.matrix.api.MatrixClient
 import io.element.android.libraries.matrix.api.exception.ClientException
+import io.element.android.libraries.matrix.api.pusher.PusherFormat
 
 /**
  * Registers and removes a pusher on the homeserver on behalf of a push provider, so every provider agrees on the parameters sent.
@@ -21,8 +22,16 @@ interface PusherSubscriber {
      * @param matrixClient the session to register the pusher for.
      * @param pushKey the token identifying this device with the gateway.
      * @param gateway the URL the homeserver should send the notifications to.
+     * @param format what the homeserver should put into the notification. UnifiedPush needs
+     * [PusherFormat.NORMAL] because it has no way to fetch the event itself, FCM prefers
+     * [PusherFormat.EVENT_ID_ONLY] to save traffic.
      */
-    suspend fun registerPusher(matrixClient: MatrixClient, pushKey: String, gateway: String): Result<Unit>
+    suspend fun registerPusher(
+        matrixClient: MatrixClient,
+        pushKey: String,
+        gateway: String,
+        format: PusherFormat = PusherFormat.EVENT_ID_ONLY,
+    ): Result<Unit>
 
     /**
      * Unregister a pusher.

@@ -8,6 +8,22 @@
 
 package io.element.android.libraries.matrix.api.pusher
 
+/**
+ * Формат уведомлений, который просит homeserver.
+ *
+ * [EVENT_ID_ONLY] — Synapse присылает только event_id, приложение само догружает
+ * событие через sync. Экономит трафик, поэтому используется для FCM.
+ *
+ * [NORMAL] — Synapse присылает полный notification (включая room_id и type).
+ * Нужен UnifiedPush: наш relay не умеет догружать событие, а парсер
+ * UnifiedPushParser требует room_id, иначе приходит «Invalid data» и
+ * показывается немое fallback-уведомление.
+ */
+enum class PusherFormat {
+    EVENT_ID_ONLY,
+    NORMAL,
+}
+
 data class SetHttpPusherData(
     val pushKey: String,
     val appId: String,
@@ -18,4 +34,5 @@ data class SetHttpPusherData(
     val lang: String,
     val defaultPayload: String,
     val append: Boolean,
+    val format: PusherFormat = PusherFormat.EVENT_ID_ONLY,
 )

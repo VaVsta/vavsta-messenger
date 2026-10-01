@@ -23,6 +23,7 @@ dependencies {
     implementation(projects.features.enterprise.api)
     implementation(projects.libraries.androidutils)
     implementation(projects.libraries.core)
+    implementation(projects.libraries.designsystem) // для CommonDrawables
     implementation(projects.libraries.matrix.api)
     implementation(projects.libraries.push.api)
     implementation(projects.libraries.uiStrings)
@@ -41,6 +42,9 @@ dependencies {
     implementation(libs.network.retrofit)
 
     implementation(libs.serialization.json)
+
+    // ServiceCompat/NotificationCompat для встроенного дистрибьютора
+    implementation(libs.androidx.corektx)
 
     // UnifiedPush library
     api(libs.unifiedpush)

@@ -48,7 +48,12 @@ class DefaultUnifiedPushGatewayResolver(
             UnifiedPushGatewayResolverResult.ErrorInvalidUrl
         } else {
             val port = if (url.port != -1) ":${url.port}" else ""
-            val customBase = "${url.protocol}://${url.host}$port"
+            // Базовый путь из endpoint'а важен: наш gateway живёт не в корне,
+            // а под /push. Раньше здесь был только protocol://host:port, из-за
+            // чего discovery уходил на /_matrix/push/v1/notify и получал 404.
+            // endpoint = https://chat.vavsta.ru/push/<token> -> base = /push
+            val basePath = url.path.substringBeforeLast("/", missingDelimiterValue = "")
+            val customBase = "${url.protocol}://${url.host}$port$basePath"
             val customUrl = "$customBase/_matrix/push/v1/notify"
             Timber.tag(loggerTag.value).i("Testing $customUrl")
             return withContext(coroutineDispatchers.io) {

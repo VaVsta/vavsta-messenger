@@ -7,7 +7,48 @@
   -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
     <application>
+        <!--
+        Встроенный UnifiedPush-дистрибьютор: держит WebSocket к своему relay,
+        чтобы push приходили на устройства без Google Play Services.
+        -->
+        <service
+            android:name=".distributor.DistributorSocketService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="dataSync" />
+
+        <receiver
+            android:name=".distributor.VavstaDistributorReceiver"
+            android:enabled="true"
+            android:exported="true"
+            tools:ignore="ExportedReceiver">
+            <intent-filter>
+                <action android:name="org.unifiedpush.android.distributor.REGISTER" />
+                <action android:name="org.unifiedpush.android.distributor.UNREGISTER" />
+                <action android:name="org.unifiedpush.android.distributor.MESSAGE_ACK" />
+            </intent-filter>
+            <!-- Маркер, по которому UnifiedPush считает нас дистрибьютором. -->
+            <meta-data
+                android:name="unifiedpush.Distributor"
+                android:value="true" />
+        </receiver>
+
+        <receiver
+            android:name=".distributor.VavstaDistributorBootReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
+
         <receiver
             android:name=".VectorUnifiedPushMessagingReceiver"
             android:enabled="true"

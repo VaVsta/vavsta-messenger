@@ -13,6 +13,7 @@ import dev.zacsweers.metro.ContributesBinding
 import io.element.android.libraries.core.extensions.flatMap
 import io.element.android.libraries.core.log.logger.LoggerTag
 import io.element.android.libraries.matrix.api.MatrixClientProvider
+import io.element.android.libraries.matrix.api.pusher.PusherFormat
 import io.element.android.libraries.pushproviders.api.PusherSubscriber
 import io.element.android.libraries.pushstore.api.UserPushStoreFactory
 import io.element.android.libraries.pushstore.api.clientsecret.PushClientSecret
@@ -46,7 +47,14 @@ class DefaultUnifiedPushNewGatewayHandler(
             matrixClientProvider
                 .getOrRestore(userId)
                 .flatMap { client ->
-                    pusherSubscriber.registerPusher(client, endpoint, pushGateway)
+                    pusherSubscriber.registerPusher(
+                        client,
+                        endpoint,
+                        pushGateway,
+                        // Наш relay не умеет догружать событие, а UnifiedPushParser
+                        // требует room_id — значит Synapse должен прислать полный payload.
+                        PusherFormat.NORMAL,
+                    )
                 }
                 .onFailure {
                     Timber.tag(loggerTag.value).w(it, "Unable to register pusher")

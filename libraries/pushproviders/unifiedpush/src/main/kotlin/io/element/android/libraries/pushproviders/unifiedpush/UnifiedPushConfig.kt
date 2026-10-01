@@ -12,8 +12,15 @@ object UnifiedPushConfig {
     /**
      * It is the push gateway for UnifiedPush.
      * Note: default_push_gateway_http_url should have path '/_matrix/push/v1/notify'
+     *
+     * Свой gateway вместо matrix.gateway.unifiedpush.org: серверная часть
+     * (vavsta-push-relay) живёт на chat.vavsta.ru и не зависит ни от matrix.org,
+     * ни от Google.
      */
-    const val DEFAULT_PUSH_GATEWAY_HTTP_URL: String = "https://matrix.gateway.unifiedpush.org/_matrix/push/v1/notify"
+    const val DEFAULT_PUSH_GATEWAY_HTTP_URL: String = "https://chat.vavsta.ru/_matrix/push/v1/notify"
+
+    /** Корень, из которого строится endpoint устройства (pushkey). */
+    const val GATEWAY_BASE_URL: String = "https://chat.vavsta.ru"
 
     const val UNIFIED_PUSH_DISTRIBUTORS_URL = "https://unifiedpush.org/users/distributors/"
 

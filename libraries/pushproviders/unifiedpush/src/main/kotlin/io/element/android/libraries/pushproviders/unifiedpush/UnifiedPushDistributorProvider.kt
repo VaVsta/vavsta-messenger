@@ -26,13 +26,11 @@ class DefaultUnifiedPushDistributorProvider(
 ) : UnifiedPushDistributorProvider {
     override fun getDistributors(): List<Distributor> {
         val distributors = UnifiedPush.getDistributors(context)
-        return distributors.mapNotNull {
-            if (it == context.packageName) {
-                // Exclude self
-                null
-            } else {
-                Distributor(it, context.getApplicationLabel(it))
-            }
+        // Раньше self исключался: встроенного дистрибьютора не было.
+        // Теперь он есть (VavstaDistributorReceiver) и он предпочтительный —
+        // работает без Google Play Services, поэтому оставляем его в списке.
+        return distributors.map { packageName ->
+            Distributor(packageName, context.getApplicationLabel(packageName))
         }
     }
 }

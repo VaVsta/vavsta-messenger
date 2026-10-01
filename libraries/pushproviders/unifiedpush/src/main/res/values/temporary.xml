@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2026 VaVsta
+  ~
+  ~ SPDX-License-Identifier: AGPL-3.0-only
+  -->
+
+<resources>
+    <string name="vavsta_push_relay_title">Receiving notifications</string>
+    <string name="vavsta_push_relay_body">VaVsta Messenger keeps a connection to the server to deliver notifications</string>
+    <string name="vavsta_push_relay_channel_name">Receiving notifications</string>
+</resources>

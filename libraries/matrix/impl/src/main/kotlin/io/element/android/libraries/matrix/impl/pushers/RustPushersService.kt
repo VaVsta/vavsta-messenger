@@ -17,6 +17,7 @@ import io.element.android.libraries.matrix.api.pusher.UnsetHttpPusherData
 import io.element.android.libraries.matrix.impl.exception.mapClientException
 import kotlinx.coroutines.withContext
 import org.matrix.rustcomponents.sdk.Client
+import io.element.android.libraries.matrix.api.pusher.PusherFormat
 import org.matrix.rustcomponents.sdk.HttpPusherData
 import org.matrix.rustcomponents.sdk.PushFormat
 import org.matrix.rustcomponents.sdk.PusherIdentifiers
@@ -37,7 +38,7 @@ class RustPushersService(
                     kind = PusherKind.Http(
                         data = HttpPusherData(
                             url = setHttpPusherData.url,
-                            format = PushFormat.EVENT_ID_ONLY,
+                            format = setHttpPusherData.format.toRustFormat(),
                             defaultPayload = setHttpPusherData.defaultPayload
                         )
                     ),
@@ -64,4 +65,11 @@ class RustPushersService(
             }
         }
     }
+}
+
+private fun PusherFormat.toRustFormat(): PushFormat = when (this) {
+    PusherFormat.EVENT_ID_ONLY -> PushFormat.EVENT_ID_ONLY
+    // UnifiedPush: без room_id парсер не понимает payload и показывает fallback.
+    // Имя варианта в FFI неизвестно, берём его по строке: "normal".
+    PusherFormat.NORMAL -> PushFormat.valueOf("NORMAL")
 }
