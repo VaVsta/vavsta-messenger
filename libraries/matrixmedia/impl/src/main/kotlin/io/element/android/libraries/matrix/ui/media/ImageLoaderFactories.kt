@@ -52,11 +52,14 @@ class DefaultImageLoaderFactory(
                 add(okHttpNetworkFetcherFactory)
                 // Add svg support
                 add(SvgDecoder.Factory())
-                // Add gif support
+                // VaVsta: GifDecoder (libwebp) идёт первым — он единственный, кто на этой
+                // прошивке реально анимирует. Проверено на телефоне: AnimatedImageDecoder
+                // (android.graphics.ImageDecoder) отдаёт от анимированных webp и APNG только
+                // первый кадр, а GifDecoder анимирует GIF. Поэтому AnimatedImageDecoder остаётся
+                // только запасным вариантом для прочих форматов.
+                add(GifDecoder.Factory())
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                     add(AnimatedImageDecoder.Factory())
-                } else {
-                    add(GifDecoder.Factory())
                 }
                 add(AvatarDataKeyer())
                 add(MediaRequestDataKeyer())

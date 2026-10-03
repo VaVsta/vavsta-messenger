@@ -10,4 +10,9 @@
     <string name="vavsta_sticker_sending">Отправляю…</string>
     <string name="vavsta_sticker_send_failed">Не отправился: %1$s</string>
     <string name="a11y_vavsta_sticker_send">Отправить стикер %1$s</string>
+    <string name="vavsta_sticker_import_button">Импорт</string>
+    <string name="vavsta_sticker_importing">Импортирую…</string>
+    <string name="vavsta_sticker_empty">Пока пусто. Нажми «Импорт» и выбери файлы: Telegram отдаёт их при экспорте паков — это .webp, .png и .tgs (анимация .tgs превращается в статичный кадр).</string>
+    <string name="vavsta_sticker_tab_dev">Скелет</string>
+    <string name="vavsta_sticker_tab_mine">Мои</string>
 </resources>

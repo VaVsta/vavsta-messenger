@@ -46,6 +46,10 @@ dependencies {
     implementation(projects.libraries.dateformatter.api)
     implementation(projects.libraries.eventformatter.api)
     implementation(projects.libraries.mediapickers.api)
+    // VaVsta: импорт стикеров из Telegram, .tgs = Lottie-анимация, нужен рендер кадра
+    implementation(libs.lottie)
+    // VaVsta: .tgs → анимированный WebP (иначе Telegram-анимация теряется)
+    implementation(libs.webp.android)
     implementation(projects.libraries.mediaviewer.api)
     implementation(projects.libraries.featureflag.api)
     implementation(projects.libraries.mediaupload.api)

@@ -74,6 +74,7 @@ import io.element.android.libraries.matrix.api.timeline.item.TimelineItemDebugIn
 import io.element.android.libraries.matrix.ui.media.contentvalidation.EventContentValidationCache
 import io.element.android.libraries.matrix.ui.media.contentvalidation.LocalEventContentValidationState
 import io.element.android.libraries.matrix.ui.model.getBestName
+import io.element.android.libraries.mediapickers.api.PickerProvider
 import io.element.android.libraries.mediaplayer.api.MediaPlayer
 import io.element.android.libraries.ui.strings.CommonStrings
 import io.element.android.libraries.ui.utils.a11y.hasExternalKeyboard
@@ -107,6 +108,7 @@ class MessagesNode(
     private val roomMemberModerationRenderer: RoomMemberModerationRenderer,
     private val eventContentValidationCache: EventContentValidationCache,
     private val emojiPickerRenderer: EmojiPickerRenderer,
+    private val pickerProvider: PickerProvider,
 ) : Node(buildContext, plugins = plugins), MessagesNavigator {
     data class Inputs(
         val focusedEventId: EventId?,
@@ -361,6 +363,7 @@ class MessagesNode(
                 }
                 StickerPickerBottomSheet(
                     state = stickerPresenter.present(),
+                    pickerProvider = pickerProvider,
                     onDismiss = { showStickerPicker = false },
                 )
             }

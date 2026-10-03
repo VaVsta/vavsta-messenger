@@ -190,10 +190,15 @@ We wrap the `matrix-rust-sdk` to isolate the UI from the underlying SDK.
 - **Отправка**: своего API в Rust SDK нет. Сделано через `JoinedRoom.sendSticker()`
   (`JoinedRustRoom.kt` → `innerRoom.sendRaw(STICKER_EVENT_TYPE, json)`) + `MatrixClient.uploadMedia`.
   Тип события — литерал `"m.sticker"` (`.map()` из `MessageLikeEventType` даёт `"Sticker"`, нельзя).
-- **Приём не работает ни в какой сборке**: FFI отдаёт `m.sticker` как `TimelineEventKind::PlainText`,
-  то есть в ленте — текст «Стикер: <файл>». `MsgLikeKind.Sticker` в FFI есть, но недостижим;
-  для `Other` контент не отдаётся. Лечится патчем FFI (`tools/sdk/build-rust-sdk`), дальше
-  отрисовка заработает сама (`TimelineEventContentMapper` уже умеет `MsgLikeKind.Sticker`).
+- **Приём работает из коробки, патчить FFI НЕ нужно** (проверено на устройстве 2026-10-04):
+  `m.sticker` рисуется штатным `TimelineItemStickerView`. Ложь, в которую сначала поверил я:
+  строка `TimelineEventKind::PlainText { event: RawEvent { event_type: "m.sticker" } }` в логах —
+  это `LatestEvent`, который специально хранит сырое событие, а не «тип не распознан». Нестабильный
+  тип `org.matrix.msc3916.sticker` не понимает никто, отправлять только `m.sticker`.
+- **Импорт из Telegram (2026-10-04):** `.webp/.png/.gif/.zip` работают, `.tgs` импортируется как
+  статичный кадр. Анимация не показывается ни в animated WebP, ни в APNG — на прошивке системный
+  `ImageDecoder` отдаёт от них первый кадр, а `GifDecoder` Coil анимирует только GIF. Рабочий путь —
+  свой GIF-энкодер, он не написан. Подробности и грабли — в `../FORK-NOTES.md`.
 - **Dev-сборка = debug-билд**: `ru.vavsta.messenger.debug`, лейбл «VaVsta Messenger DEV»,
   лента «DEV» (`x/ui/DevBuildRibbon.kt`), логи в logcat + TRACE только при `BuildConfig.DEBUG`.
   Сборка: `./gradlew :app:assembleGplayDebug -x :app:licenseeAndroidGplayDebug -x :app:copyGplayDebugLicenseeReportToAssets`.
