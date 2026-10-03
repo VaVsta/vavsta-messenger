@@ -45,6 +45,7 @@ internal fun AttachmentsBottomSheet(
     onSendLocationClick: () -> Unit,
     onCreatePollClick: () -> Unit,
     enableTextFormatting: Boolean,
+    onPickStickerClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val localView = LocalView.current
@@ -85,6 +86,7 @@ internal fun AttachmentsBottomSheet(
                 enableTextFormatting = enableTextFormatting,
                 onSendLocationClick = onSendLocationClick,
                 onCreatePollClick = onCreatePollClick,
+                onPickStickerClick = onPickStickerClick,
             )
         }
     }
@@ -96,6 +98,7 @@ private fun AttachmentSourcePickerMenu(
     onSendLocationClick: () -> Unit,
     onCreatePollClick: () -> Unit,
     enableTextFormatting: Boolean,
+    onPickStickerClick: () -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -141,6 +144,15 @@ private fun AttachmentSourcePickerMenu(
             leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Polls())),
             content = { Text(stringResource(R.string.screen_room_attachment_source_poll)) },
         )
+        // VaVsta: скелет стикеров, пункт первым — потом будет панель в стиле Telegram.
+        ListItem(
+            modifier = Modifier.clickable {
+                state.eventSink(MessageComposerEvent.PickAttachmentSource.Sticker)
+                onPickStickerClick()
+            },
+            leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Sticker())),
+            content = { Text(stringResource(R.string.screen_room_attachment_source_sticker)) },
+        )
         if (enableTextFormatting) {
             ListItem(
                 modifier = Modifier.clickable { state.eventSink(MessageComposerEvent.ToggleTextFormatting(enabled = true)) },
@@ -162,5 +174,6 @@ internal fun AttachmentsBottomSheetPreview() = ElementPreview(fillMaxSize = true
         onSendLocationClick = {},
         onCreatePollClick = {},
         enableTextFormatting = true,
+        onPickStickerClick = {},
     )
 }

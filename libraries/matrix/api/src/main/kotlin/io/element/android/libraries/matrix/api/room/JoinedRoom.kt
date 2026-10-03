@@ -14,6 +14,7 @@ import io.element.android.libraries.matrix.api.core.RoomAlias
 import io.element.android.libraries.matrix.api.core.SendHandle
 import io.element.android.libraries.matrix.api.core.UserId
 import io.element.android.libraries.matrix.api.encryption.identity.IdentityStateChange
+import io.element.android.libraries.matrix.api.media.ImageInfo
 import io.element.android.libraries.matrix.api.room.history.RoomHistoryVisibility
 import io.element.android.libraries.matrix.api.room.join.JoinRule
 import io.element.android.libraries.matrix.api.room.knock.KnockRequest
@@ -323,4 +324,19 @@ interface JoinedRoom : BaseRoom {
      * the user's display name across all of their rooms.
      */
     suspend fun setOwnMemberDisplayName(displayName: String): Result<Unit>
+
+    /**
+     * VaVsta: отправляет стикер (`m.room.message` с `msgtype: m.sticker`).
+     *
+     * Сделано через `sendRaw`, потому что в Rust SDK есть `StickerContent` только на чтение,
+     * а отправки стикера в типизированных методах нет: MSC3916 требует `body` = имя файла,
+     * `url` = mxc-ссылка и `info` = метаданные картинки, и всё это не влезает в `caption`
+     * обычной отправки картинки.
+     *
+     * @param mediaUrl mxc-ссылка на загруженный файл, напр. `mxc://server/mediaId`.
+     * @param body имя файла, как его увидит получатель.
+     * @param info метаданные (размер, mime, ширина/высота).
+     * @return Result indicating success or failure.
+     */
+    suspend fun sendSticker(mediaUrl: String, body: String, info: ImageInfo): Result<Unit>
 }

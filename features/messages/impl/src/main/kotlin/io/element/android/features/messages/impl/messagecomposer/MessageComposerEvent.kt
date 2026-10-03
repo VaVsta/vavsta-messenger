@@ -28,6 +28,9 @@ sealed interface MessageComposerEvent {
         data object VideoFromCamera : PickAttachmentSource
         data object Location : PickAttachmentSource
         data object Poll : PickAttachmentSource
+
+        /** VaVsta: скелет стикеров (MSC3916). Открытие пикера — на view-слое. */
+        data object Sticker : PickAttachmentSource
     }
 
     data class ToggleTextFormatting(val enabled: Boolean) : MessageComposerEvent

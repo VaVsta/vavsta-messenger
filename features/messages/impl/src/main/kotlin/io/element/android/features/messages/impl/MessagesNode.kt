@@ -16,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -38,6 +39,8 @@ import io.element.android.features.messages.impl.messagecomposer.MessageComposer
 import io.element.android.features.messages.impl.timeline.TimelineController
 import io.element.android.features.messages.impl.timeline.TimelineEvent
 import io.element.android.features.messages.impl.timeline.TimelinePresenter
+import io.element.android.features.messages.impl.sticker.StickerPickerBottomSheet
+import io.element.android.features.messages.impl.sticker.StickerPickerPresenter
 import io.element.android.features.messages.impl.timeline.components.customreaction.CustomReactionBottomSheet
 import io.element.android.features.messages.impl.timeline.di.LocalTimelineItemPresenterFactories
 import io.element.android.features.messages.impl.timeline.di.TimelineItemPresenterFactories
@@ -93,6 +96,7 @@ class MessagesNode(
     private val room: JoinedRoom,
     private val analyticsService: AnalyticsService,
     messageComposerPresenterFactory: MessageComposerPresenter.Factory,
+    private val stickerPickerPresenterFactory: StickerPickerPresenter.Factory,
     timelinePresenterFactory: TimelinePresenter.Factory,
     presenterFactory: MessagesPresenter.Factory,
     actionListPresenterFactory: ActionListPresenter.Factory,
@@ -110,6 +114,10 @@ class MessagesNode(
 
     private val inputs = inputs<Inputs>()
     private val callback: Callback = callback()
+
+    // VaVsta: скелет стикеров — панель открывается прямо из ноды, без NavTarget: это временное
+    // решение на время проверки на телефоне, дальше панель получит нормальный экран.
+    private var showStickerPicker by mutableStateOf(false)
 
     private val timelineController = TimelineController(room, room.liveTimeline)
     private val presenter = presenterFactory.create(
@@ -321,6 +329,7 @@ class MessagesNode(
                 },
                 onSendLocationClick = callback::navigateToSendLocation,
                 onCreatePollClick = callback::navigateToCreatePoll,
+                onPickStickerClick = { showStickerPicker = true },
                 onJoinCallClick = { isAudioCall ->
                     callback.navigateToRoomCall(room.roomId, isAudioCall)
                 },
@@ -343,6 +352,18 @@ class MessagesNode(
                 },
                 onThreadsListClick = callback::navigateToThreadsList,
             )
+            if (showStickerPicker) {
+                val stickerPresenter = remember(room) {
+                    stickerPickerPresenterFactory.create(
+                        room = room,
+                        onStickerSent = { showStickerPicker = false },
+                    )
+                }
+                StickerPickerBottomSheet(
+                    state = stickerPresenter.present(),
+                    onDismiss = { showStickerPicker = false },
+                )
+            }
             roomMemberModerationRenderer.Render(
                 state = state.roomMemberModerationState,
                 onSelectAction = { action, target ->

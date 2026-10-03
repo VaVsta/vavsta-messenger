@@ -147,6 +147,7 @@ fun MessagesView(
     onLinkClick: (String, Boolean) -> Unit,
     onSendLocationClick: () -> Unit,
     onCreatePollClick: () -> Unit,
+    onPickStickerClick: () -> Unit,
     onJoinCallClick: (isAudioCall: Boolean) -> Unit,
     onViewAllPinnedMessagesClick: () -> Unit,
     onThreadsListClick: () -> Unit,
@@ -304,6 +305,7 @@ fun MessagesView(
                             },
                             onSendLocationClick = onSendLocationClick,
                             onCreatePollClick = onCreatePollClick,
+                            onPickStickerClick = onPickStickerClick,
                             onSwipeToReply = { targetEvent ->
                                 state.eventSink(MessagesEvent.HandleAction(TimelineItemAction.Reply, targetEvent))
                             },
@@ -507,6 +509,7 @@ private fun MessagesViewContent(
     onGalleryItemClick: ((TimelineItem.Event, Int) -> Unit),
     onSendLocationClick: () -> Unit,
     onCreatePollClick: () -> Unit,
+    onPickStickerClick: () -> Unit,
     onViewAllPinnedMessagesClick: () -> Unit,
     onJoinCallClick: (isAudioCall: Boolean) -> Unit,
     forceJumpToBottomVisibility: Boolean,
@@ -525,6 +528,7 @@ private fun MessagesViewContent(
             onSendLocationClick = onSendLocationClick,
             onCreatePollClick = onCreatePollClick,
             enableTextFormatting = state.enableTextFormatting,
+            onPickStickerClick = onPickStickerClick,
         )
 
         if (state.voiceMessageComposerState.showPermissionRationaleDialog) {
@@ -705,6 +709,7 @@ internal fun MessagesViewPreview(@PreviewParameter(MessagesStatePreviewParam::cl
         onLinkClick = { _, _ -> },
         onSendLocationClick = {},
         onCreatePollClick = {},
+        onPickStickerClick = {},
         onJoinCallClick = {},
         onViewAllPinnedMessagesClick = { },
         forceJumpToBottomVisibility = true,
@@ -762,6 +767,7 @@ internal fun MessagesViewA11yPreview() = ElementPreview {
         onLinkClick = { _, _ -> },
         onSendLocationClick = {},
         onCreatePollClick = {},
+        onPickStickerClick = {},
         onJoinCallClick = {},
         onViewAllPinnedMessagesClick = {},
         onThreadsListClick = {},

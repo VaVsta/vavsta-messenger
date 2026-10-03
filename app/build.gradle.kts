@@ -105,7 +105,9 @@ android {
     buildTypes {
         val oAuthRedirectSchemeBase = BuildTimeConfig.METADATA_HOST_REVERSED ?: "io.element.android"
         getByName("debug") {
-            resValue("string", "app_name", "$baseAppName dbg")
+            // VaVsta: dev-сборка ставится рядом с продом (applicationIdSuffix .debug) и должна
+            // отличаться ярлыком, иначе в лаунчере две одинаковые иконки "VaVsta Messenger".
+            resValue("string", "app_name", "$baseAppName DEV")
             resValue(
                 "string",
                 "login_redirect_scheme",

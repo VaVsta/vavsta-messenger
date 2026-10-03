@@ -16,6 +16,7 @@ import io.element.android.libraries.matrix.api.core.RoomAlias
 import io.element.android.libraries.matrix.api.core.SendHandle
 import io.element.android.libraries.matrix.api.core.UserId
 import io.element.android.libraries.matrix.api.encryption.identity.IdentityStateChange
+import io.element.android.libraries.matrix.api.media.ImageInfo
 import io.element.android.libraries.matrix.api.room.BaseRoom
 import io.element.android.libraries.matrix.api.room.CreateTimelineParams
 import io.element.android.libraries.matrix.api.room.IntentionalMention
@@ -93,6 +94,7 @@ class FakeJoinedRoom(
     private val stopLiveLocationShareResult: () -> Result<Unit> = { lambdaError() },
     private val sendLiveLocationResult: (String) -> Result<Unit> = { lambdaError() },
     private val setOwnMemberDisplayNameResult: (String) -> Result<Unit> = { lambdaError() },
+    private val sendStickerResult: (String, String, ImageInfo) -> Result<Unit> = { _, _, _ -> lambdaError() },
 ) : JoinedRoom, BaseRoom by baseRoom {
     private val sendQueueUpdates = MutableSharedFlow<SendQueueUpdate>(extraBufferCapacity = 10)
 
@@ -258,6 +260,10 @@ class FakeJoinedRoom(
 
     override suspend fun setOwnMemberDisplayName(displayName: String): Result<Unit> = simulateLongTask {
         setOwnMemberDisplayNameResult(displayName)
+    }
+
+    override suspend fun sendSticker(mediaUrl: String, body: String, info: ImageInfo): Result<Unit> = simulateLongTask {
+        sendStickerResult(mediaUrl, body, info)
     }
 
     private suspend fun simulateSendMediaProgress(progressCallback: ProgressCallback?) {

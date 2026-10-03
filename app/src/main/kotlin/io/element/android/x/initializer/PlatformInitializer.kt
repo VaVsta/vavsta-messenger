@@ -13,6 +13,8 @@ import android.system.Os
 import androidx.startup.Initializer
 import io.element.android.features.rageshake.api.logs.createWriteToFilesConfiguration
 import io.element.android.libraries.architecture.bindings
+import io.element.android.libraries.matrix.api.tracing.LogLevel
+import io.element.android.x.BuildConfig
 import io.element.android.libraries.featureflag.api.FeatureFlags
 import io.element.android.libraries.matrix.api.tracing.TracingConfiguration
 import io.element.android.x.di.AppBindings
@@ -33,9 +35,11 @@ class PlatformInitializer : Initializer<Unit> {
         val featureFlagService = appBindings.featureFlagService()
         val logLevel = runBlocking { preferencesStore.getTracingLogLevelFlow().first() }
         val tracingConfiguration = TracingConfiguration(
-            writesToLogcat = runBlocking { featureFlagService.isFeatureEnabled(FeatureFlags.PrintLogsToLogcat) },
+            // VaVsta: в dev-сборке логи всегда в logcat и всегда на максимальном уровне — иначе
+            // разбираться, что происходит на телефоне, нечем (в проде поведение не меняем).
+            writesToLogcat = BuildConfig.DEBUG || runBlocking { featureFlagService.isFeatureEnabled(FeatureFlags.PrintLogsToLogcat) },
             writesToFilesConfiguration = bugReporter.createWriteToFilesConfiguration(),
-            logLevel = logLevel,
+            logLevel = if (BuildConfig.DEBUG) LogLevel.TRACE else logLevel,
             extraTargets = listOf(ELEMENT_X_TARGET),
             traceLogPacks = runBlocking { preferencesStore.getTracingLogPacksFlow().first() },
             sdkSentryDsn = appBindings.sentrySdkDsn()?.value?.takeIf { it.isNotBlank() },

@@ -42,6 +42,7 @@ import io.element.android.libraries.designsystem.utils.snackbar.LocalSnackbarDis
 import io.element.android.services.analytics.compose.LocalAnalyticsService
 import io.element.android.x.di.AppBindings
 import io.element.android.x.intent.SafeUriHandler
+import io.element.android.x.ui.DevBuildRibbon
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
@@ -94,6 +95,8 @@ class MainActivity : NodeActivity() {
                             modifier = Modifier,
                         )
                     }
+                    // VaVsta: лента «DEV» поверх всего окна, только в debug-сборке.
+                    DevBuildRibbon()
                 }
             }
         }

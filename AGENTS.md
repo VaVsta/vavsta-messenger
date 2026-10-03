@@ -185,3 +185,19 @@ We wrap the `matrix-rust-sdk` to isolate the UI from the underlying SDK.
 - **`AboutState.toString()` в юнит-тестах падает**: state держит function reference, и Turbine при попытке отформатировать несъеденное событие уходит в `kotlin.reflect` и даёт `KotlinReflectionInternalError`. В `AboutPresenterTest` после ассертов звать `cancelAndIgnoreRemainingEvents()`.
 - Сети в юнит-тестах избегать: `AboutPresenter` при пустом кэше сам уходит в `UpdateChecker.fetchUpdateInfo()`.
 
+
+## Стикеры (MSC3916) — состояние на 2026-10-03
+- **Отправка**: своего API в Rust SDK нет. Сделано через `JoinedRoom.sendSticker()`
+  (`JoinedRustRoom.kt` → `innerRoom.sendRaw(STICKER_EVENT_TYPE, json)`) + `MatrixClient.uploadMedia`.
+  Тип события — литерал `"m.sticker"` (`.map()` из `MessageLikeEventType` даёт `"Sticker"`, нельзя).
+- **Приём не работает ни в какой сборке**: FFI отдаёт `m.sticker` как `TimelineEventKind::PlainText`,
+  то есть в ленте — текст «Стикер: <файл>». `MsgLikeKind.Sticker` в FFI есть, но недостижим;
+  для `Other` контент не отдаётся. Лечится патчем FFI (`tools/sdk/build-rust-sdk`), дальше
+  отрисовка заработает сама (`TimelineEventContentMapper` уже умеет `MsgLikeKind.Sticker`).
+- **Dev-сборка = debug-билд**: `ru.vavsta.messenger.debug`, лейбл «VaVsta Messenger DEV»,
+  лента «DEV» (`x/ui/DevBuildRibbon.kt`), логи в logcat + TRACE только при `BuildConfig.DEBUG`.
+  Сборка: `./gradlew :app:assembleGplayDebug -x :app:licenseeAndroidGplayDebug -x :app:copyGplayDebugLicenseeReportToAssets`.
+  Логи приложения: `adb logcat -s org.matrix.rust.sdk` (префикс `elementx:`).
+- Панель стикеров пока висит полем `showStickerPicker` в `MessagesNode` без NavTarget — временное
+  решение, при нормализации сделать отдельным экраном как `features/poll`.
+- Подробности и грабли — в `../FORK-NOTES.md`, раздел «Стикеры».

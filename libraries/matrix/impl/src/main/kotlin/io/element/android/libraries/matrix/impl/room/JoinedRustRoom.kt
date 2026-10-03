@@ -21,6 +21,7 @@ import io.element.android.libraries.matrix.api.core.RoomAlias
 import io.element.android.libraries.matrix.api.core.SendHandle
 import io.element.android.libraries.matrix.api.core.UserId
 import io.element.android.libraries.matrix.api.encryption.identity.IdentityStateChange
+import io.element.android.libraries.matrix.api.media.ImageInfo
 import io.element.android.libraries.matrix.api.notificationsettings.NotificationSettingsService
 import io.element.android.libraries.matrix.api.room.BaseRoom
 import io.element.android.libraries.matrix.api.room.CreateTimelineParams
@@ -96,6 +97,14 @@ import kotlin.coroutines.cancellation.CancellationException
 import org.matrix.rustcomponents.sdk.IdentityStatusChange as RustIdentityStateChange
 import org.matrix.rustcomponents.sdk.KnockRequest as InnerKnockRequest
 import org.matrix.rustcomponents.sdk.Timeline as InnerTimeline
+
+/**
+ * VaVsta: тип события стикера по MSC3916.
+ *
+ * Строкой литералом, а не через `MessageLikeEventType.Sticker.map()`: uniffi-обёртка ruma
+ * отдаёт `toString() == "Sticker"`, а сервер ждёт `m.sticker`.
+ */
+private const val STICKER_EVENT_TYPE = "m.sticker"
 
 class JoinedRustRoom(
     private val baseRoom: RustBaseRoom,
@@ -560,6 +569,56 @@ class JoinedRustRoom(
     override suspend fun setOwnMemberDisplayName(displayName: String): Result<Unit> = withContext(roomDispatcher) {
         runCatchingExceptions {
             innerRoom.setOwnMemberDisplayName(displayName)
+        }
+    }
+
+    override suspend fun sendSticker(mediaUrl: String, body: String, info: ImageInfo): Result<Unit> = withContext(roomDispatcher) {
+        runCatchingExceptions {
+            innerRoom.sendRaw(STICKER_EVENT_TYPE, buildStickerContentJson(mediaUrl, body, info))
+        }
+        .onSuccess {
+            Timber.i("SendSticker: sent as $mediaUrl (${info.mimetype}, ${info.width}x${info.height})")
+        }
+        .onFailure { Timber.e(it, "SendSticker: could not send the sticker") }
+    }
+
+    /**
+     * VaVsta: собирает контент стикера по MSC3916.
+     *
+     * Стикер — это отдельный тип события `m.sticker` (а НЕ `m.room.message` с `msgtype: m.sticker`),
+     * и именно его Rust SDK разбирает как `MsgLikeKind.Sticker` при получении.
+     * Поля: `body` = имя файла, `url` = mxc-ссылка, `info` = те же метаданные, что у картинки.
+     * Экранирование вручную, чтобы не тащить в этот модуль сериализатор ради трёх строк.
+     */
+    private fun buildStickerContentJson(mediaUrl: String, body: String, info: ImageInfo): String {
+        val infoJson = buildString {
+            append("{")
+            info.width?.let { append("\"w\":$it,") }
+            info.height?.let { append("\"h\":$it,") }
+            append("\"size\":${info.size ?: 0},")
+            append("\"mimetype\":\"${info.mimetype.orEmpty().jsonEscape()}\"")
+            info.blurhash?.let { append(",\"blurhash\":\"${it.jsonEscape()}\"") }
+            append("}")
+        }
+        return buildString {
+            append("{")
+            append("\"body\":\"${body.jsonEscape()}\",")
+            append("\"url\":\"${mediaUrl.jsonEscape()}\",")
+            append("\"info\":$infoJson")
+            append("}")
+        }
+    }
+
+    private fun String.jsonEscape(): String = buildString(length) {
+        this@jsonEscape.forEach { char ->
+            when (char) {
+                '"' -> append("\\\"")
+                '\\' -> append("\\\\")
+                '\n' -> append("\\n")
+                '\r' -> append("\\r")
+                '\t' -> append("\\t")
+                else -> if (char < ' ') append("\\u%04x".format(char.code)) else append(char)
+            }
         }
     }
 
