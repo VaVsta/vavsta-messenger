@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  VaVsta Messenger (форк Element X): красная debug-лента через угол адаптивной иконки.
+  Живёт только в appicon/element/src/debug, поэтому в release/nightly иконка не меняется.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!--
+      Геометрия: у адаптивной иконки маской видимы только центральные 72x72 из 108,
+      поэтому лента идёт из угла видимой области (90,18), а не из (108,0) — иначе её срежет
+      маской. Длина 30, полуширина 5: логотип «V» остаётся читаемым, а лента не сливается
+      с фоном иконки.
+    -->
+    <path
+        android:fillColor="#E53935"
+        android:pathData="M93.5,21.5 L72.3,42.7 L65.3,35.7 L86.5,14.5 Z" />
+</vector>
