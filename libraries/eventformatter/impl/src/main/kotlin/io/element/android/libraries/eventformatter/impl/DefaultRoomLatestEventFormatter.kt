@@ -94,7 +94,12 @@ class DefaultRoomLatestEventFormatter(
                 message.prefixIfNeeded(senderDisambiguatedDisplayName, isDmRoom, isOutgoing)
             }
             is StickerContent -> {
-                content.bestDescription.prefixWith(sp.getString(CommonStrings.common_sticker))
+                // VaVsta: в списке чатов показываем просто «Стикер».
+                // Раньше сюда подставлялся `StickerContent.bestDescription` = `body ?: filename`,
+                // а `body` у наших стикеров — техническое имя файла, из-за чего превью читалось
+                // как «Стикер: 66e3d191.gif». Имя файла пользователю на экране чатов ничего
+                // не сообщает, поэтому оставляем только тип сообщения.
+                sp.getString(CommonStrings.common_sticker)
                     .prefixIfNeeded(senderDisambiguatedDisplayName, isDmRoom, isOutgoing)
             }
             is UnableToDecryptContent -> {

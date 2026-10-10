@@ -103,7 +103,8 @@ class DefaultRoomLatestEventFormatterTest : RobolectricTest() {
         val info = ImageInfo(null, null, null, null, null, null, null)
         val message = createLatestEvent(false, null, aStickerContent(body, info, aMediaSource(url = "url")))
         val result = formatter.format(message, false)
-        val expectedBody = "⁨" + someoneElseId.value + "⁩: Sticker: a sticker body"
+        // VaVsta: body стикера игнорируется — в списке чатов показываем только «Стикер»
+        val expectedBody = "⁨" + someoneElseId.value + "⁩: Sticker"
         // Check we have formatting
         assertThat(result is AnnotatedString).isTrue()
         // And there is a bold span for the 'Sticker' part

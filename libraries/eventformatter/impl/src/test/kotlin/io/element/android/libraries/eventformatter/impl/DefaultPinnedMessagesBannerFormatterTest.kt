@@ -93,7 +93,8 @@ class DefaultPinnedMessagesBannerFormatterTest : RobolectricTest() {
         val info = ImageInfo(null, null, null, null, null, null, null)
         val message = createRoomEvent(false, null, aStickerContent(body, info, aMediaSource(url = "url")))
         val result = formatter.format(message)
-        val expectedBody = "Sticker: a sticker body"
+        // VaVsta: body стикера игнорируется — это техническое имя файла, а не текст для человека
+        val expectedBody = "Sticker"
         assertThat(result.toString()).isEqualTo(expectedBody)
     }
 

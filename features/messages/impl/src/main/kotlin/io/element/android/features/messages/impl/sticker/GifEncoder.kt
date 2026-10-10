@@ -29,10 +29,16 @@ internal class GifEncoder(
 ) {
     private val frames = mutableListOf<IntArray>()
 
-    /** Добавляет кадр из ARGB-пикселей (раскладка как у Bitmap.getPixels). */
+    /** Добавляет кадр из ARGB-пикселей (раскладка как у Bitmap.getPixels).
+     *
+     * ВАЖНО: массив КОПИРУЕТСЯ. Вызывающий код переиспользует один буфер `IntArray` на все
+     * кадры (`bitmap.getPixels(pixels, …)` в цикле), и без копии все кадры ссылались бы на один
+     * и тот же массив — в GIF попадало 25 одинаковых кадров. Симптом обманчивый: файл весит
+     * десятки килобайт, duration правильный, разбирается без ошибок — а картинка не двигается.
+     */
     fun addFrame(pixels: IntArray) {
         require(pixels.size == width * height) { "кадр ${pixels.size} != ${width * height}" }
-        frames += pixels
+        frames += pixels.copyOf()
     }
 
     val frameCount: Int get() = frames.size

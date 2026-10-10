@@ -15,7 +15,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
@@ -88,18 +87,26 @@ internal fun AnimatedImagePainter(
 
     // Читается в draw-скоупе: изменение заставляет Compose перерисовать кадр
     var frame by remember { mutableIntStateOf(0) }
-    var startTime by remember { mutableStateOf(0L) }
-    var buffer: android.graphics.Bitmap? by remember { mutableStateOf(null) }
-    var bufferCanvas: android.graphics.Canvas? by remember { mutableStateOf(null) }
 
-    // Ссылки на актуальные значения: цикл запускается ОДИН раз (Unit), иначе composable,
-    // который пересоздаётся каждый кадр (список чатов), перезапускает эффект 2000+ раз в
-    // минуту и анимация не успевает сделать даже одного шага.
+    // Остальное держим НЕ в Compose state, а в мутируемых контейнерах:
+    // всё это перечитывается из draw-лямбды, а писать state из draw-скоупа нельзя
+    // (это ломает снапшоты и плодит лишние перерисовки).
+    val startTime = remember { longArrayOf(0L) }
+    val buffer = remember { arrayOfNulls<android.graphics.Bitmap>(1) }
+    val bufferCanvas = remember { arrayOfNulls<android.graphics.Canvas>(1) }
+
+    // Ссылки на актуальные значения: цикл запускается ОДИН раз на каждую сменившуюся
+    // картинку, иначе composable, который пересоздаётся каждый кадр (список чатов),
+    // перезапускает эффект 2000+ раз в минуту и анимация не успевает сделать даже одного шага.
     val currentDrawable by rememberUpdatedState(drawable)
     val currentMovie by rememberUpdatedState(movie)
     val currentAnimatable by rememberUpdatedState(animatable)
 
-    LaunchedEffect(Unit) {
+    // Ключ — сама картинка: смена стикера перезапускает цикл, а рекомпозиции таймлайна нет.
+    // Для НЕ анимированных картинок (обычные PNG) эффект сразу выходит и не жжёт батарею
+    // на пустом `while (true)` с 60 итерациями в секунду.
+    LaunchedEffect(drawable) {
+        if (currentMovie == null) return@LaunchedEffect
         while (true) {
             withFrameNanos { }
             val d = currentDrawable
@@ -111,7 +118,7 @@ internal fun AnimatedImagePainter(
                     d.javaClass.getMethod("setRepeatCount", Int::class.javaPrimitiveType).invoke(d, 0)
                 }
                 a.start()
-                startTime = SystemClock.uptimeMillis()
+                startTime[0] = SystemClock.uptimeMillis()
             }
             if (m != null && a?.isRunning == true) frame++
         }
@@ -120,9 +127,9 @@ internal fun AnimatedImagePainter(
     DisposableEffect(drawable) {
         onDispose {
             animatable?.stop()
-            buffer?.recycle()
-            buffer = null
-            bufferCanvas = null
+            buffer[0]?.recycle()
+            buffer[0] = null
+            bufferCanvas[0] = null
         }
     }
 
@@ -146,25 +153,28 @@ internal fun AnimatedImagePainter(
         if (movie != null) {
             val duration = movie.duration()
             if (duration <= 0) return@Canvas
-            val elapsed = ((SystemClock.uptimeMillis() - startTime) % duration).toInt()
-            val ok = movie.setTime(elapsed)
+            val elapsed = ((SystemClock.uptimeMillis() - startTime[0]) % duration).toInt()
+            movie.setTime(elapsed)
             // ВАЖНО: Movie.draw() рисует только на программный канва. На hardware-канве Compose
-            // (то, что даёт DrawScope) кадр молча не рисуется — проверено: в offscreen Bitmap
-            // Movie отдаёт 5 разных кадров из 6, прямо в Compose-канве — ноль изменений.
-            val currentBuffer = buffer
+            // (то, что даёт DrawScope) кадр молча не рисуется — проверено пробой на устройстве:
+            // в offscreen Bitmap Movie отдаёт все кадры, прямо в Compose-канве — ноль изменений.
             val movieWidth = movie.width().coerceAtLeast(1)
             val movieHeight = movie.height().coerceAtLeast(1)
-            if (currentBuffer == null || currentBuffer.width != movieWidth || currentBuffer.height != movieHeight) {
-                currentBuffer?.recycle()
-                buffer = android.graphics.Bitmap.createBitmap(
+            val existing = buffer[0]
+            if (existing == null || existing.isRecycled ||
+                existing.width != movieWidth || existing.height != movieHeight
+            ) {
+                existing?.recycle()
+                val created = android.graphics.Bitmap.createBitmap(
                     movieWidth,
                     movieHeight,
                     android.graphics.Bitmap.Config.ARGB_8888,
                 )
-                bufferCanvas = android.graphics.Canvas(buffer!!)
+                buffer[0] = created
+                bufferCanvas[0] = android.graphics.Canvas(created)
             }
-            val target = buffer!!
-            val targetCanvas = bufferCanvas!!
+            val target = buffer[0] ?: return@Canvas
+            val targetCanvas = bufferCanvas[0] ?: return@Canvas
             target.eraseColor(0)
             movie.draw(targetCanvas, 0f, 0f)
 

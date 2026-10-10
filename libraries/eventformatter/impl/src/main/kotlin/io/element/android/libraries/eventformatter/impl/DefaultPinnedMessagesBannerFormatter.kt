@@ -47,8 +47,9 @@ class DefaultPinnedMessagesBannerFormatter(
         return when (val content = event.content) {
             is MessageContent -> processMessageContents(event, content)
             is StickerContent -> {
-                val text = content.body ?: content.filename
-                text.prefixWith(CommonStrings.common_sticker)
+                // VaVsta: как и в списке чатов — без «body/filename», иначе баннер закреплённого
+                // показывал «Стикер: 66e3d191.gif»
+                sp.getString(CommonStrings.common_sticker)
             }
             is UnableToDecryptContent -> {
                 sp.getString(CommonStrings.common_waiting_for_decryption_key)

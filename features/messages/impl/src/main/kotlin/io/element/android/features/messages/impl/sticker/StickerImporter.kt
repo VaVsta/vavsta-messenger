@@ -187,15 +187,24 @@ class DefaultStickerImporter(
                 .value
         } ?: return null
 
-        // ВАЖНО: Lottie отдаёт duration во Float СЕКУНДАХ, а нам нужны миллисекунды.
-        val durationMs = (composition.duration * 1000f).toLong().coerceAtLeast(1L)
+        // ВАЖНО: `LottieComposition.duration` — УЖЕ В МИЛЛИСЕКУНДАХ.
+        // Проверено байткодом lottie 6.7.1: `getDuration() = (long)(durationFrames / frameRate * 1000f)`.
+        // Раньше мы умножали ещё раз на 1000, и 2-секундная анимация превращалась в 33-минутную:
+        // GIF на 25 кадров с задержкой 80 секунд. Файл при этом весит нормально и открывается,
+        // поэтому баг выглядел как «анимация не играет», а на деле кадры просто отстояли
+        // друг от друга на полминуты.
+        val durationMs = composition.duration.toLong().coerceAtLeast(1L)
+        Timber.i(
+            "StickerImport: .tgs %s → длительность %d мс (кадров в композиции %d, fps %s)",
+            source.name, durationMs, composition.durationFrames.toInt(), composition.frameRate.toInt(),
+        )
 
         val target = store.importDirectory().resolve("$id.gif")
         for (attempt in RENDER_ATTEMPTS) {
             val size = attempt.size
-            val frameCount = attempt.frames.coerceAtMost(
-                (durationMs / 1000 * MAX_FPS).toInt().coerceAtLeast(2)
-            )
+            // Умножение до деления: иначе короткая анимация (меньше секунды) даёт 0 кадров.
+            val maxFramesByTime = (durationMs * MAX_FPS / 1000L).toInt().coerceAtLeast(2)
+            val frameCount = attempt.frames.coerceAtMost(maxFramesByTime)
             val delayMs = (durationMs / frameCount).coerceAtLeast(40L)
 
             val encoder = GifEncoder(width = size, height = size, delayMs = delayMs.toInt())
@@ -204,19 +213,24 @@ class DefaultStickerImporter(
             val canvas = Canvas(bitmap)
             drawable.setBounds(0, 0, size, size)
             val pixels = IntArray(size * size)
-            val step = durationMs.toFloat() / frameCount
+            val uniqueFrames = HashSet<Int>()
             repeat(frameCount) { index ->
                 bitmap.eraseColor(Color.TRANSPARENT)
-                drawable.progress = index * step / durationMs
+                drawable.progress = index.toFloat() / frameCount
                 drawable.draw(canvas)
                 bitmap.getPixels(pixels, 0, size, 0, 0, size, size)
+                // Считаем разные кадры: одинаковые = сломанный рендер, ловим сразу
+                uniqueFrames += pixels.contentHashCode()
                 encoder.addFrame(pixels)
             }
             bitmap.recycle()
 
             target.outputStream().buffered().use { encoder.write(it) }
             val bytes = target.length()
-            Timber.i("StickerImport: .tgs → GIF %d×%d, %d кадров, %d Б", size, size, frameCount, bytes)
+            Timber.i(
+                "StickerImport: .tgs → GIF %d×%d, %d кадров по %d мс, уникальных %d, %d Б",
+                size, size, frameCount, delayMs, uniqueFrames.size, bytes,
+            )
             if (bytes <= MAX_SIZE_BYTES) return@runCatching target
             // Не влезло — следующая попытка перезапишет файл меньшим вариантом
         }
