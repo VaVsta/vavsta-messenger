@@ -4,49 +4,29 @@
 
 package io.element.android.features.messages.impl.sticker
 
-import android.content.ContentResolver
 import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.Canvas
 import android.graphics.BitmapFactory
+import android.graphics.Canvas
 import android.graphics.Color
 import android.net.Uri
 import com.airbnb.lottie.LottieComposition
 import com.airbnb.lottie.LottieCompositionFactory
-import com.aureusapps.android.webpandroid.encoder.WebPAnimEncoder
-import com.aureusapps.android.webpandroid.encoder.WebPAnimEncoderOptions
-import com.aureusapps.android.webpandroid.encoder.WebPMuxAnimParams
-import com.aureusapps.android.webpandroid.encoder.WebPConfig
-import com.aureusapps.android.webpandroid.encoder.WebPPreset
 import com.airbnb.lottie.LottieDrawable
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import io.element.android.libraries.di.annotations.ApplicationContext
-import io.element.android.libraries.matrix.api.MatrixClient
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.io.File
 import java.io.FileInputStream
-import java.util.zip.GZIPInputStream
 import java.io.FileOutputStream
 import java.util.UUID
+import java.util.zip.GZIPInputStream
 import java.util.zip.ZipInputStream
 import kotlin.math.roundToInt
 
-/**
- * VaVsta: импорт своих стикеров из выбранных пользователем файлов.
- *
- * Что понимаем на входе:
- * - `.webp` / `.png` — копируем как есть (Telegram отдаёт такие при экспорте паков);
- * - `.tgs` — это **не картинка**, а Lottie-анимация (gzipped JSON). Матрикс их не понимает,
- *   поэтому рендерим статичный кадр 512×512 и отправляем его как PNG. Анимация теряется —
- *   честнее, чем молча отправить файл, который получатель не покажет;
- * - `.zip` — распаковываем (экспорт Telegram Desktop) и обрабатываем содержимое рекурсивно.
- *
- * Ограничения MSC3916: 512×512 и до 300 КБ — приводим к ним, чтобы сервер и клиенты
- * не начали капризничать на крупных кадрах.
- */
 /**
  * Итог импорта одного файла. Отдельное имя, а не `Result`: иначе конфликтует с `kotlin.Result`.
  */
@@ -55,7 +35,19 @@ sealed interface ImportResult {
     data class Failed(val reason: String) : ImportResult
 }
 
-/** VaVsta: разбор выбранных файлов в стикеры. */
+/**
+ * VaVsta: разбор выбранных пользователем файлов в стикеры.
+ *
+ * Что понимаем на входе:
+ * - `.webp` / `.png` / `.gif` — копируем как есть (Telegram отдаёт такие при экспорте паков);
+ * - `.tgs` — это **не картинка**, а Lottie-анимация (gzipped JSON). Матрикс их не понимает,
+ *   поэтому рендерим покадры и отдаём анимированный GIF: на прошивке нашего телефона animated
+ *   WebP показывается только первым кадром, а GIF проигрывается полностью;
+ * - `.zip` — распаковываем (экспорт Telegram Desktop) и обрабатываем содержимое.
+ *
+ * Ограничения MSC3916: 512×512 и до 300 КБ — приводим к ним, чтобы сервер и клиенты
+ * не начали капризничать на крупных кадрах.
+ */
 interface StickerImporter {
     /** Импортирует один выбранный файл (или архив) и возвращает, что получилось. */
     suspend fun import(uri: Uri): ImportResult
@@ -66,7 +58,6 @@ class DefaultStickerImporter(
     @ApplicationContext private val context: Context,
     private val store: MyStickerStore,
 ) : StickerImporter {
-
     override suspend fun import(uri: Uri): ImportResult = withContext(Dispatchers.IO) {
         val name = displayName(uri)
         Timber.i("StickerImport: берём %s", name)
@@ -80,20 +71,29 @@ class DefaultStickerImporter(
                 val imported = mutableListOf<MySticker>()
                 extracted.forEach { file -> importFile(file)?.let { imported += it } }
                 extracted.forEach { it.delete() }
-                if (imported.isEmpty()) ImportResult.Failed("в архиве не нашлось webp/png/tgs")
-                else ImportResult.Imported(imported)
+                if (imported.isEmpty()) {
+                    ImportResult.Failed("в архиве не нашлось webp/png/tgs")
+                } else {
+                    ImportResult.Imported(imported)
+                }
             }
 
             "tgs" -> {
                 val sticker = importFile(materialise(uri, name))
-                if (sticker == null) ImportResult.Failed("не смог прочитать анимацию .tgs")
-                else ImportResult.Imported(listOf(sticker))
+                if (sticker == null) {
+                    ImportResult.Failed("не смог прочитать анимацию .tgs")
+                } else {
+                    ImportResult.Imported(listOf(sticker))
+                }
             }
 
             "webp", "png", "gif" -> {
                 val sticker = importFile(materialise(uri, name))
-                if (sticker == null) ImportResult.Failed("не смог прочитать картинку")
-                else ImportResult.Imported(listOf(sticker))
+                if (sticker == null) {
+                    ImportResult.Failed("не смог прочитать картинку")
+                } else {
+                    ImportResult.Imported(listOf(sticker))
+                }
             }
 
             else -> ImportResult.Failed("формат ${extensionOf(name).ifEmpty { "?" }} не поддерживается — нужны webp, png или tgs")
@@ -101,20 +101,24 @@ class DefaultStickerImporter(
     }
 
     private fun importFile(source: File): MySticker? {
-        val extension = extensionOf(source.name)
+        var extension = extensionOf(source.name)
         val id = UUID.randomUUID().toString()
         val target: File
         val mimeType: String
         val fromTgs = extension == "tgs"
 
         if (fromTgs) {
-            // Анимация целиком: Lottie → кадры → animated WebP. Иначе от Telegram остаётся
+            // Анимация целиком: Lottie → кадры → GIF. Иначе от Telegram остаётся
             // один-единственный кадр, а Telegram-стикеры почти все анимированные.
+            // Раньше здесь был animated WebP, но на прошивке нашего телефона он показывался
+            // только первым кадром.
             target = renderTgsAnimation(source, id) ?: run {
                 Timber.e("StickerImport: .tgs не дал анимации (%s)", source.name)
                 return null
             }
-            mimeType = "image/webp"
+            mimeType = "image/gif"
+            // Имя и расширение — из gif, а не из tgs: иначе сохраним файл с чужим расширением
+            extension = "gif"
         } else {
             val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
             BitmapFactory.decodeFile(source.absolutePath, bounds)
@@ -124,7 +128,8 @@ class DefaultStickerImporter(
             mimeType = if (extension == "png") "image/png" else "image/$extension"
         }
 
-        val final = fit(target)
+        // Анимацию НЕ трогаем: fit() пережал бы её в статичный PNG и убил движение
+        val final = if (fromTgs) target else fit(target)
         val sticker = MySticker(
             id = id,
             fileName = "${id.take(8)}.$extension",
@@ -165,11 +170,15 @@ class DefaultStickerImporter(
     }
 
     /**
-     * `.tgs` = gzipped Lottie JSON → набор кадров → анимированный WebP (MSC3916 его понимает,
-     * Android показывает нативно).
+     * `.tgs` = gzipped Lottie JSON → набор кадров → анимированный GIF.
      *
-     * Кадров берём [FRAME_COUNT], но не больше, чем реально есть в анимации: короткие
-     * «моргалки» не раздуваем до 25 почти одинаковых картинок.
+     * Почему GIF, а не animated WebP: на прошивке нашего телефона системный `ImageDecoder`
+     * отдаёт от animated WebP только первый кадр, а `GifDecoder` из coil-gif анимирует только
+     * GIF. Проверено на устройстве — WebP показывается как статика. GIF — единственный формат,
+     * который тут реально проигрывается, поэтому пишем своим энкодером (GifEncoder).
+     *
+     * Размер: лимит MSC3916 — 300 КБ. 25 кадров 512×512 дают около 740 КБ, поэтому перебираем
+     * варианты от лучшего к худшему, пока не влезем.
      */
     private fun renderTgsAnimation(source: File, id: String): File? = runCatching {
         val composition: LottieComposition = GZIPInputStream(FileInputStream(source)).use { jsonStream ->
@@ -178,46 +187,41 @@ class DefaultStickerImporter(
                 .value
         } ?: return null
 
-        // ВАЖНО: Lottie отдаёт duration во Float СЕКУНДАХ, а энкодеру нужны миллисекунды.
+        // ВАЖНО: Lottie отдаёт duration во Float СЕКУНДАХ, а нам нужны миллисекунды.
         val durationMs = (composition.duration * 1000f).toLong().coerceAtLeast(1L)
-        val frameCount = FRAME_COUNT.coerceAtMost((durationMs / 1000 * MAX_FPS).toInt().coerceAtLeast(2))
-        val drawable = LottieDrawable().apply { setComposition(composition) }
-        val encoder = WebPAnimEncoder(
-            context = context,
-            width = TARGET_SIZE,
-            height = TARGET_SIZE,
-            options = WebPAnimEncoderOptions(
-                minimizeSize = true,
-                animParams = WebPMuxAnimParams(loopCount = LOOP_FOREVER),
-            ),
-        )
-        try {
-            encoder.configure(
-                config = WebPConfig(
-                    lossless = WebPConfig.COMPRESSION_LOSSY,
-                    quality = QUALITY,
-                    alphaCompression = WebPConfig.ALPHA_COMPRESSION_WITH_LOSSLESS,
-                ),
-                preset = WebPPreset.WEBP_PRESET_PICTURE,
+
+        val target = store.importDirectory().resolve("$id.gif")
+        for (attempt in RENDER_ATTEMPTS) {
+            val size = attempt.size
+            val frameCount = attempt.frames.coerceAtMost(
+                (durationMs / 1000 * MAX_FPS).toInt().coerceAtLeast(2)
             )
-            val frameStep = (durationMs.toFloat() / frameCount).toLong()
-            val bitmap = Bitmap.createBitmap(TARGET_SIZE, TARGET_SIZE, Bitmap.Config.ARGB_8888)
+            val delayMs = (durationMs / frameCount).coerceAtLeast(40L)
+
+            val encoder = GifEncoder(width = size, height = size, delayMs = delayMs.toInt())
+            val drawable = LottieDrawable().apply { setComposition(composition) }
+            val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+            val canvas = Canvas(bitmap)
+            drawable.setBounds(0, 0, size, size)
+            val pixels = IntArray(size * size)
+            val step = durationMs.toFloat() / frameCount
             repeat(frameCount) { index ->
                 bitmap.eraseColor(Color.TRANSPARENT)
-                drawable.progress = index.toFloat() / frameCount
-                drawable.setBounds(0, 0, TARGET_SIZE, TARGET_SIZE)
-                drawable.draw(Canvas(bitmap))
-                encoder.addFrame(index * frameStep, bitmap)
+                drawable.progress = index * step / durationMs
+                drawable.draw(canvas)
+                bitmap.getPixels(pixels, 0, size, 0, 0, size, size)
+                encoder.addFrame(pixels)
             }
             bitmap.recycle()
 
-            val target = store.importDirectory().resolve("$id.webp")
-            encoder.assemble(durationMs, Uri.fromFile(target))
-            Timber.i("StickerImport: %s → %d кадров, %d Б", source.name, frameCount, target.length())
-            target
-        } finally {
-            encoder.release()
+            target.outputStream().buffered().use { encoder.write(it) }
+            val bytes = target.length()
+            Timber.i("StickerImport: .tgs → GIF %d×%d, %d кадров, %d Б", size, size, frameCount, bytes)
+            if (bytes <= MAX_SIZE_BYTES) return@runCatching target
+            // Не влезло — следующая попытка перезапишет файл меньшим вариантом
         }
+        // Ни один вариант не влез в лимит: отдаём последний (самый мелкий), а не молча мимо
+        target
     }.onFailure {
         Timber.e(it, "StickerImport: .tgs не собрался в анимацию")
     }.getOrNull()
@@ -319,6 +323,19 @@ class DefaultStickerImporter(
 
         /** Сколько кадров кладём в анимацию (Telegram обычно 60 fps, но нам хватит 25). */
         const val FRAME_COUNT = 25
+
+        /**
+         * Попытки попасть в лимит MSC3916: от лучшего качества к худшему.
+         * 25 кадров 512×512 дают около 740 КБ — многовато, поэтому уменьшаем.
+         */
+        val RENDER_ATTEMPTS = listOf(
+            RenderAttempt(size = 512, frames = 25),
+            RenderAttempt(size = 512, frames = 14),
+            RenderAttempt(size = 384, frames = 14),
+            RenderAttempt(size = 320, frames = 10),
+        )
+
+        data class RenderAttempt(val size: Int, val frames: Int)
 
         /** Не дёргаем Lottie чаще, чем он реально умеет. */
         const val MAX_FPS = 25

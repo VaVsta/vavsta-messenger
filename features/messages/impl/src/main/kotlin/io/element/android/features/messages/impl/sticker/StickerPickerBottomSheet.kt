@@ -47,12 +47,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import io.element.android.features.messages.impl.R
 import io.element.android.features.messages.impl.timeline.components.customreaction.ExpandSheetWhenImeIsVisible
+import io.element.android.libraries.core.mimetype.MimeTypes
 import io.element.android.libraries.designsystem.preview.ElementPreview
 import io.element.android.libraries.designsystem.preview.PreviewsDayNight
 import io.element.android.libraries.designsystem.theme.components.CircularProgressIndicator
 import io.element.android.libraries.designsystem.theme.components.ModalBottomSheet
 import io.element.android.libraries.designsystem.theme.components.Text
-import io.element.android.libraries.core.mimetype.MimeTypes
 import io.element.android.libraries.mediapickers.api.PickerProvider
 import java.io.File
 

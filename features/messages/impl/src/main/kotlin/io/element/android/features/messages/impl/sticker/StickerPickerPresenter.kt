@@ -53,7 +53,16 @@ class StickerPickerPresenter(
         var sendError by remember { mutableStateOf<String?>(null) }
         var importError by remember { mutableStateOf<String?>(null) }
 
-        fun send(name: String, mimeType: String, width: Int, height: Int, sizeBytes: Long, mediaUrlOrNull: String?, readBytes: () -> ByteArray, onUploaded: ((String) -> Unit)? = null) {
+        fun send(
+            name: String,
+            mimeType: String,
+            width: Int,
+            height: Int,
+            sizeBytes: Long,
+            mediaUrlOrNull: String?,
+            readBytes: () -> ByteArray,
+            onUploaded: ((String) -> Unit)? = null,
+        ) {
             if (sendingStickerId != null) return
             sendingStickerId = name
             sendError = null

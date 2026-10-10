@@ -34,10 +34,10 @@ data class MySticker(
 )
 
 /**
- * Хранилище своих стикеров: файлы лежат в `filesDir/vavsta-stickers/`, список — в
- * SharedPreferences `vavsta_my_stickers` (JSON руками, чтобы не подключать плагин сериализации).
+ * VaVsta: хранилище импортированных стикеров. Файлы лежат в `filesDir/vavsta-stickers/`,
+ * список — в SharedPreferences `vavsta_my_stickers` (JSON собран руками, чтобы не подключать
+ * плагин сериализации ради одной строки).
  */
-/** VaVsta: хранилище импортированных стикеров. */
 interface MyStickerStore {
     fun list(): List<MySticker>
     fun add(sticker: MySticker)

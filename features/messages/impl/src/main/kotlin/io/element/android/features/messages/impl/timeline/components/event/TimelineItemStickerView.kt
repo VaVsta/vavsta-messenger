@@ -8,25 +8,24 @@
 
 package io.element.android.features.messages.impl.timeline.components.event
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.PreviewParameter
-import coil3.compose.AsyncImage
+import coil3.compose.rememberAsyncImagePainter
 import io.element.android.features.messages.impl.timeline.model.event.TimelineItemStickerContent
 import io.element.android.features.messages.impl.timeline.model.event.TimelineItemStickerContentPreviewParam
 import io.element.android.features.messages.impl.timeline.protection.ProtectedView
@@ -74,23 +73,25 @@ fun TimelineItemStickerView(
             ) {
                 var isThumbnailLoaded by remember { mutableStateOf(false) }
 
-                AsyncImage(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .then(if (isThumbnailLoaded) Modifier.background(Color.White) else Modifier)
-                        .then(
-                            if (onContentClick != null) {
-                                Modifier
-                                    .combinedClickable(
-                                        onClick = onContentClick,
-                                        onLongClick = onLongClick,
-                                        onLongClickLabel = stringResource(CommonStrings.action_open_context_menu),
-                                    )
-                                    .onKeyboardContextMenuAction(onLongClick)
-                            } else {
-                                Modifier
-                            }
-                        ),
+                // VaVsta: белой подложки после загрузки больше нет — у прозрачного GIF она давала
+                // серый квадрат вокруг стикера.
+                val stickerModifier = Modifier
+                    .fillMaxSize()
+                    .then(
+                        if (onContentClick != null) {
+                            Modifier
+                                .combinedClickable(
+                                    onClick = onContentClick,
+                                    onLongClick = onLongClick,
+                                    onLongClickLabel = stringResource(CommonStrings.action_open_context_menu),
+                                )
+                                .onKeyboardContextMenuAction(onLongClick)
+                        } else {
+                            Modifier
+                        }
+                    )
+
+                val stickerPainter = rememberAsyncImagePainter(
                     model = MediaRequestData(
                         source = content.preferredMediaSource,
                         kind = MediaRequestData.Kind.File(
@@ -99,18 +100,25 @@ fun TimelineItemStickerView(
                         ),
                     ),
                     contentScale = ContentScale.Crop,
-                    alignment = Alignment.Center,
-                    contentDescription = description,
-                    onState = { state ->
-                        val url = content.preferredMediaSource?.safeUrl
-                        if (url != null) {
-                            handleAsyncImageStateChange(
-                                state = state,
-                                onLoaded = { isThumbnailLoaded = true },
-                                updateContentValidationState = { contentValidationState.update(url, it) },
-                            )
-                        }
-                    },
+                )
+
+                LaunchedEffect(stickerPainter.state) {
+                    val url = content.preferredMediaSource?.safeUrl
+                    if (url != null) {
+                        handleAsyncImageStateChange(
+                            state = stickerPainter.state.value,
+                            onLoaded = { isThumbnailLoaded = true },
+                            updateContentValidationState = { contentValidationState.update(url, it) },
+                        )
+                    }
+                }
+
+                // VaVsta: рендерим сами, а не штатным AsyncImage. Coil 3.5 не запускает анимацию
+                // у DrawableImage (см. AnimatedImagePainter), и GIF навсегда висит на первом кадре.
+                AnimatedImagePainter(
+                    painter = stickerPainter,
+                    modifier = stickerModifier.semantics { contentDescription = description },
+                    contentScale = ContentScale.Crop,
                 )
             }
 
