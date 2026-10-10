@@ -32,9 +32,11 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LinearProgressIndicator
@@ -54,6 +56,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -66,6 +69,7 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
@@ -87,6 +91,7 @@ import io.element.android.libraries.designsystem.components.async.AsyncLoading
 import io.element.android.libraries.designsystem.components.button.BackButton
 import io.element.android.libraries.designsystem.components.dialogs.RetryDialog
 import io.element.android.libraries.designsystem.preview.ElementPreviewDark
+import io.element.android.libraries.designsystem.theme.components.CircularProgressIndicator
 import io.element.android.libraries.designsystem.theme.components.HorizontalDivider
 import io.element.android.libraries.designsystem.theme.components.Icon
 import io.element.android.libraries.designsystem.theme.components.IconButton
@@ -101,6 +106,7 @@ import io.element.android.libraries.matrix.ui.media.MediaRequestData
 import io.element.android.libraries.matrix.ui.media.contentvalidation.collectMediaState
 import io.element.android.libraries.mediaviewer.api.MediaInfo
 import io.element.android.libraries.mediaviewer.api.local.LocalMedia
+import io.element.android.libraries.mediaviewer.impl.R
 import io.element.android.libraries.mediaviewer.impl.details.MediaBottomSheetState
 import io.element.android.libraries.mediaviewer.impl.details.MediaDeleteConfirmationBottomSheet
 import io.element.android.libraries.mediaviewer.impl.details.MediaDetailsBottomSheet
@@ -469,6 +475,15 @@ private fun MediaViewerPage(
                             thumbnailSource = data.thumbnailSource,
                         )
                     }
+
+                    // Форк: понятный статус загрузки поверх превью. Раньше тут висела только
+                    // тонкая полоска 2dp сверху — на тяжёлом видео экран выглядел как «завис на
+                    // первом кадре», и непонятно, грузит он вообще или сломался.
+                    if (showProgress) {
+                        MediaDownloadingOverlay(
+                            modifier = Modifier.align(Alignment.Center),
+                        )
+                    }
                 }
 
                 if (showError) {
@@ -480,6 +495,39 @@ private fun MediaViewerPage(
                 }
             }
         }
+    }
+}
+
+/**
+ * Форк: оверлей «идёт загрузка» поверх миниатюры.
+ *
+ * SDK отдаёт факт загрузки без прогресса, поэтому вместо процентов показываем кольцо-спиннер и
+ * текст. Это честнее пустого экрана: пользователь видит, что файл ещё едет с сервера.
+ */
+@Composable
+private fun MediaDownloadingOverlay(
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier
+            .clip(RoundedCornerShape(16.dp))
+            .background(Color.Black.copy(alpha = 0.55f))
+            .padding(horizontal = 24.dp, vertical = 20.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        CircularProgressIndicator(
+            modifier = Modifier.size(36.dp),
+            color = Color.White,
+            trackColor = Color.White.copy(alpha = 0.2f),
+            strokeWidth = 3.dp,
+        )
+        Text(
+            modifier = Modifier.padding(top = 12.dp),
+            text = stringResource(R.string.vavsta_media_downloading),
+            textAlign = TextAlign.Center,
+            color = Color.White,
+            style = ElementTheme.typography.fontBodyMdRegular,
+        )
     }
 }
 

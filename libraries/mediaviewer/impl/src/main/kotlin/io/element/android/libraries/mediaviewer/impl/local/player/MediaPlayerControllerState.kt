@@ -19,6 +19,17 @@ data class MediaPlayerControllerState(
     val canMute: Boolean,
     val isMuted: Boolean,
     val seekingToMillis: Long?,
+    // Форк: буферизация, ошибка и скорость. Раньше их не было, и из-за этого на перемотку в
+    // небуферизованную зону кнопка play мигала (ExoPlayer.isPlaying == false во время буферизации),
+    // а ошибка декодирования выглядела как вечное «видео не грузится».
+    val isBuffering: Boolean = false,
+    /** `Player.playWhenReady` — пользователь нажал play, даже если кадр пока не поступил. */
+    val playWhenReady: Boolean = false,
+    @FloatRange(from = 0.0, to = 100.0)
+    val bufferedPercentage: Int = 0,
+    val hasError: Boolean = false,
+    val canChangePlaybackSpeed: Boolean = false,
+    val playbackSpeed: Float = 1f,
 ) {
     /**
      * The progress in milliseconds to display. When [seekingToMillis] is non-null (during a seek operation),
@@ -28,6 +39,15 @@ data class MediaPlayerControllerState(
     val displayProgressInMillis: Long
         get() = seekingToMillis ?: progressInMillis
 
+    /** NaN при duration == 0 проглатывать нельзя: Slider с таким значением рисуется криво. */
     @FloatRange(from = 0.0, to = 1.0)
-    val progressAsFloat = (displayProgressInMillis.toFloat() / durationInMillis.toFloat()).coerceIn(0f, 1f)
+    val progressAsFloat: Float =
+        if (durationInMillis <= 0L) {
+            0f
+        } else {
+            (displayProgressInMillis.toFloat() / durationInMillis.toFloat()).coerceIn(0f, 1f)
+        }
+
+    @FloatRange(from = 0.0, to = 1.0)
+    val bufferedAsFloat: Float = (bufferedPercentage / 100f).coerceIn(0f, 1f)
 }

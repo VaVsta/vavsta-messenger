@@ -12,11 +12,13 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -27,6 +29,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -43,11 +46,12 @@ import io.element.android.libraries.designsystem.preview.ElementPreview
 import io.element.android.libraries.designsystem.preview.PreviewsDayNight
 import io.element.android.libraries.designsystem.theme.components.Icon
 import io.element.android.libraries.designsystem.theme.components.IconButton
-import io.element.android.libraries.designsystem.theme.components.Slider
 import io.element.android.libraries.designsystem.theme.components.Text
+import io.element.android.libraries.mediaviewer.impl.R
 import io.element.android.libraries.mediaviewer.impl.util.bgCanvasWithTransparency
 import io.element.android.libraries.ui.strings.CommonStrings
 import timber.log.Timber
+import java.util.Locale
 
 @Composable
 fun MediaPlayerControllerView(
@@ -57,6 +61,8 @@ fun MediaPlayerControllerView(
     onToggleMute: () -> Unit,
     audioFocus: AudioFocus?,
     modifier: Modifier = Modifier,
+    // Форк: цикл скорости. Не передаётся аудио-плеером (там скорость не нужна).
+    onCyclePlaybackSpeed: (() -> Unit)? = null,
 ) {
     if (audioFocus != null) {
         val latestOnTogglePlay by rememberUpdatedState(onTogglePlay)
@@ -83,16 +89,18 @@ fun MediaPlayerControllerView(
     ) {
         Box(
             modifier = Modifier
+                .padding(8.dp)
+                .clip(RoundedCornerShape(20.dp))
                 .background(color = bgCanvasWithTransparency)
                 .padding(horizontal = 8.dp, vertical = 4.dp),
             contentAlignment = Alignment.Center,
         ) {
             Row(
                 modifier = Modifier
-                    .widthIn(max = 480.dp),
+                    .widthIn(max = 560.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                val colors = if (state.isPlaying) {
+                val colors = if (state.playWhenReady) {
                     IconButtonDefaults.iconButtonColors(
                         containerColor = ElementTheme.colors.bgCanvasDefault,
                         contentColor = ElementTheme.colors.iconPrimary,
@@ -109,12 +117,14 @@ fun MediaPlayerControllerView(
                     modifier = Modifier
                         .size(36.dp)
                         .semantics {
-                            stateDescription = if (state.isPlaying) a11yPause else a11yPlay
+                            // Форк: ориентируемся на playWhenReady, а не на isPlaying. Во время
+                            // буферизации isPlaying == false, и кнопка скакала на «play» сама по себе.
+                            stateDescription = if (state.playWhenReady) a11yPause else a11yPlay
                         },
                     onClick = onTogglePlay,
                     colors = colors,
                 ) {
-                    if (state.isPlaying) {
+                    if (state.playWhenReady) {
                         Icon(
                             imageVector = CompoundIcons.PauseSolid(),
                             contentDescription = null,
@@ -141,28 +151,26 @@ fun MediaPlayerControllerView(
                     style = ElementTheme.typography.fontBodyXsMedium,
                 )
                 var lastSelectedValue by remember { mutableFloatStateOf(-1f) }
-                Slider(
+                MediaPlayerSeekBar(
                     modifier = Modifier
                         .weight(1f)
-                        .semantics {
-                            // Speak out a progress percent instead of milliseconds
-                            stateDescription = buildString {
-                                append((state.progressAsFloat * 100).toInt())
-                                append("%")
-                            }
-                        },
-                    valueRange = 0f..state.durationInMillis.toFloat(),
-                    value = lastSelectedValue.takeIf { it >= 0 }
-                        ?: state.seekingToMillis?.toFloat()
-                        ?: state.progressInMillis.toFloat(),
+                        .padding(horizontal = 4.dp),
+                    value = lastSelectedValue.takeIf { it >= 0 } ?: state.progressAsFloat,
+                    buffered = state.bufferedAsFloat,
+                    enabled = state.durationInMillis > 0,
+                    a11yStateDescription = buildString {
+                        append((state.progressAsFloat * 100).toInt())
+                        append("%")
+                    },
                     onValueChange = {
                         lastSelectedValue = it
                     },
                     onValueChangeFinish = {
-                        onSeekChange(lastSelectedValue)
+                        if (lastSelectedValue >= 0) {
+                            onSeekChange(lastSelectedValue)
+                        }
                         lastSelectedValue = -1f
                     },
-                    useCustomLayout = true,
                 )
                 val formattedDuration = remember(state.durationInMillis) {
                     state.durationInMillis.toHumanReadableDuration()
@@ -205,9 +213,34 @@ fun MediaPlayerControllerView(
                         }
                     }
                 }
+                if (state.canChangePlaybackSpeed && onCyclePlaybackSpeed != null) {
+                    // Форк: кнопка скорости. Подпись — только текущее значение, без попапа со списком.
+                    val speedLabel = formatPlaybackSpeed(state.playbackSpeed)
+                    val a11ySpeed = stringResource(R.string.vavsta_video_playback_speed, speedLabel)
+                    Text(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .clickable(onClick = onCyclePlaybackSpeed)
+                            .padding(horizontal = 6.dp, vertical = 4.dp)
+                            .semantics {
+                                stateDescription = a11ySpeed
+                            },
+                        text = speedLabel,
+                        textAlign = TextAlign.Center,
+                        color = ElementTheme.colors.textPrimary,
+                        style = ElementTheme.typography.fontBodyXsMedium,
+                    )
+                }
             }
         }
     }
+}
+
+/** «1×», «1.5×» — всегда с точкой, без локали (иначе в ru будет «1,5×»). */
+internal fun formatPlaybackSpeed(speed: Float): String = if (speed % 1f == 0f) {
+    "${speed.toInt()}×"
+} else {
+    "${String.format(Locale.US, "%.1f", speed)}×"
 }
 
 @PreviewsDayNight
@@ -221,5 +254,6 @@ internal fun MediaPlayerControllerViewPreview(
         onSeekChange = {},
         onToggleMute = {},
         audioFocus = null,
+        onCyclePlaybackSpeed = {},
     )
 }

@@ -15,12 +15,35 @@ open class MediaPlayerControllerStatePreviewParam : PreviewParameterProvider<Med
         aMediaPlayerControllerState(),
         aMediaPlayerControllerState(
             isPlaying = true,
+            playWhenReady = true,
+            isReady = true,
             progressInMillis = 59_000,
             durationInMillis = 83_000,
+            bufferedPercentage = 75,
             isMuted = true,
         ),
         aMediaPlayerControllerState(
             canMute = false,
+        ),
+        // Форк: состояния, которых раньше не существовало — буферизация, ошибка, скорость.
+        aMediaPlayerControllerState(
+            isBuffering = true,
+            playWhenReady = true,
+            isReady = true,
+            progressInMillis = 12_000,
+            bufferedPercentage = 40,
+        ),
+        aMediaPlayerControllerState(
+            hasError = true,
+            isReady = true,
+        ),
+        aMediaPlayerControllerState(
+            isPlaying = true,
+            playWhenReady = true,
+            isReady = true,
+            canChangePlaybackSpeed = true,
+            playbackSpeed = 1.5f,
+            bufferedPercentage = 100,
         ),
     )
 }
@@ -35,6 +58,12 @@ private fun aMediaPlayerControllerState(
     canMute: Boolean = true,
     isMuted: Boolean = false,
     seekingToMillis: Long? = null,
+    isBuffering: Boolean = false,
+    playWhenReady: Boolean = false,
+    bufferedPercentage: Int = 0,
+    hasError: Boolean = false,
+    canChangePlaybackSpeed: Boolean = false,
+    playbackSpeed: Float = 1f,
 ) = MediaPlayerControllerState(
     isVisible = isVisible,
     isPlaying = isPlaying,
@@ -44,4 +73,10 @@ private fun aMediaPlayerControllerState(
     canMute = canMute,
     isMuted = isMuted,
     seekingToMillis = seekingToMillis,
+    isBuffering = isBuffering,
+    playWhenReady = playWhenReady,
+    bufferedPercentage = bufferedPercentage,
+    hasError = hasError,
+    canChangePlaybackSpeed = canChangePlaybackSpeed,
+    playbackSpeed = playbackSpeed,
 )

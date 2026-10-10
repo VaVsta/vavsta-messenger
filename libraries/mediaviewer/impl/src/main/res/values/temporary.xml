@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  VaVsta Messenger (форк Element X): строки, добавленные в форке.
+  По конвенции upstream новые строки живут здесь, localazy.xml не трогаем.
+-->
+<resources>
+    <!-- Видеоплеер -->
+    <string name="vavsta_video_playback_speed">Скорость: %1$s</string>
+    <string name="vavsta_video_buffering">Загрузка видео…</string>
+    <string name="vavsta_video_error">Не удалось воспроизвести</string>
+    <string name="vavsta_video_seek_forward">+%1$d с</string>
+    <string name="vavsta_video_seek_back">−%1$d с</string>
+    <!-- Статус скачивания медиа (SDK не отдаёт прогресс, поэтому без процентов) -->
+    <string name="vavsta_media_downloading">Загрузка…</string>
+</resources>
