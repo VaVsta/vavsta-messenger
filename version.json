@@ -1,9 +1,9 @@
 {
-  "versionCode": 202610012,
-  "versionName": "1.0.6",
-  "apkUrl": "https://chat.vavsta.ru/vavsta-messenger/vavsta-messenger-arm64-202610012.apk",
-  "sha256": "b4f059200b059620c5c697d5cb7e44c00a9b5b7e1ecef66099a3df62362f5b02",
-  "sizeBytes": 117668988,
-  "publishedAt": "2026-10-01T21:23:00+03:00",
-  "notes": "1.0.6: свой встроенный UnifiedPush-дистрибьютор (без Google, relay на chat.vavsta.ru/push), уведомления со звуком при заблокированном экране, русификация настроек уведомлений и меню разработчика"
+  "versionCode": 202610022,
+  "versionName": "1.0.7",
+  "apkUrl": "https://chat.vavsta.ru/vavsta-messenger/vavsta-messenger-arm64-202610022.apk",
+  "sha256": "02cae596c307b7f0101922fcbd351e3f2160fbceac7eed498613532d2af50601",
+  "sizeBytes": 119177468,
+  "publishedAt": "2026-10-11T03:38:26+03:00",
+  "notes": "1.0.7: анимированные стикеры (.tgs) проигрываются по-настоящему — починен энкодер кадров и длительность анимации; в списке чатов превью стикера теперь просто 'Стикер' без имени файла; анимация в таймлайне больше не жжёт батарею на статичных картинках"
 }

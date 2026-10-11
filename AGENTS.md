@@ -145,6 +145,13 @@ We wrap the `matrix-rust-sdk` to isolate the UI from the underlying SDK.
 
 Грабля, из-за которой всё это разнесено по модулям: `UpdateNotificationCreator` лежит в `features.preferences.impl`, а `MainActivity` — в `app`, оттуда настройки её не видно. Поэтому тап идёт **implicit intent-ом** по своему action, а ловит его `intent-filter` для `MainActivity` в `app/src/main/AndroidManifest.xml`. Экран About выводится наружу через `PreferencesEntryPoint.InitialTarget.About` → `PreferencesFlowNode.NavTarget.About`; `IntentResolver` отдаёт `ResolvedIntent.About`, `RootFlowNode.onOpenAbout()` → `LoggedInFlowNode.navigateToAbout()`. Экран About живёт внутри залогиненной сессии — без сессии тап по уведомлению просто ничего не делает.
 
+## Сборка: ограничение ресурсов (правило юзера, 2026-10-11)
+- **Максимум 10 gradle-воркеров**, уже прописано в `gradle.properties` (`org.gradle.workers.max=10`) — руками ничего добавлять не надо. Без этого gradle распараллеливал задачи на все ядра, и ноут переставал отвечать (юзер один раз словил «ядро положило»).
+- **Всегда `JAVA_HOME=/usr/lib/jvm/java-21-openjdk`**: в системе default-JDK = 27, и сборка падает с «Inconsistent JVM-target compatibility: compileJava (27) vs compileKotlin (26)». В проекте `Versions.javaVersion` = 21.
+- **Фоновые сборки — только с выводом в файл** (`> /tmp/.../build.log 2>&1`), НЕ через `| head` / `| grep` в пайпе: `head` закрывает пайп после N строк → gradle ловит SIGPIPE и умирает на середине, а демон остаётся жить и создаёт ложное впечатление, будто сборка идёт.
+- **Обязательные `-x` для обеих сборок**: `licenseeAndroidGplay{Debug,Release}` и `copyGplay{Debug,Release}LicenseeReportToAssets` — без них падает «Artifacts failed validation».
+- Сборка релизной ветки дополнительно падает в R8 на `Missing class okhttp3.internal.Util` (от `webp-android`) — уже закрыто правилом в `app/proguard/common/common-proguard-rules.keep`.
+
 ## Релиз (прод, `chat.vavsta.ru`)
 1. `plugins/src/main/kotlin/Versions.kt`: `versionYear`/`versionMonth`/`versionReleaseNumber` (CalVer) + `VERSION_NAME` (то, что видит юзер). `versionCode` = `(2000+year)*10000 + month*100 + release`, дальше домножается на 10 и добавляется abi-код (arm64 = 2).
 2. `./gradlew :app:assembleGplayRelease` → `app/build/outputs/apk/gplay/release/app-gplay-arm64-v8a-release.apk`.
