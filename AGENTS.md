@@ -161,7 +161,7 @@ We wrap the `matrix-rust-sdk` to isolate the UI from the underlying SDK.
 
 **Подпись:** buildType `release` подписывается `app/signature/debug.keystore` (тот же, что у 1.0, сертификат `b0b051dc…`). Ключ менять нельзя — иначе OTA не встанет поверх установленной сборки.
 
-Прод сейчас: **1.0.4**, `versionCode` 202609042 (1.0.3 = 202609032, 1.0.2 = 202609022, 1.0.1 = 202609012, 1.0 = 202608042 — все в `/var/www/element/vavsta-messenger/`, откат = вернуть нужный `version.json.bak-*`). Локальный `version.json` в репо держать зеркалом пушнутой версии.
+Прод сейчас: **1.0.7**, `versionCode` 202610022 (1.0.6 = 202610012, 1.0.5 = 202609072, 1.0.4 = 202609042, 1.0.3 = 202609032, 1.0.2 = 202609022, 1.0.1 = 202609012, 1.0 = 202608042 — все в `/var/www/element/vavsta-messenger/`, откат = вернуть нужный `version.json.bak-*`). Локальный `version.json` в репо держать зеркалом пушнутой версии.
 
 ### Security-чек 2026-09-28 (все поверхности — чисто/закрыто)
 - **Git:** в ветке только 8 локальных коммитов, один бранч `develop`, stash/тэгов нет. Скан добавленных строк по 15 паттернам (tokens, PEM, JWT, AWS/Goog, ключи юзера, LAN/VPS IP, пути машины) — ноль совпадений. `local.properties` в `.gitignore`, в истории нет.
@@ -193,7 +193,10 @@ We wrap the `matrix-rust-sdk` to isolate the UI from the underlying SDK.
 - Сети в юнит-тестах избегать: `AboutPresenter` при пустом кэше сам уходит в `UpdateChecker.fetchUpdateInfo()`.
 
 
-## Стикеры (MSC3916) — состояние на 2026-10-03
+## Стикеры (MSC3916) — состояние на 2026-10-11
+- **Анимация в таймлайне работает** (проверено на устройстве: логи дают `смен_картинки=180`,
+  `tick=1020`). Долгое «не работает» было ЛОЖНЫМ выводом: хеш кадра брался по пустому углу
+  8×8, а замерялся синтетический GIF, а не реальный стикер. Подробности и грабли — `../FORK-NOTES.md`.
 - **Отправка**: своего API в Rust SDK нет. Сделано через `JoinedRoom.sendSticker()`
   (`JoinedRustRoom.kt` → `innerRoom.sendRaw(STICKER_EVENT_TYPE, json)`) + `MatrixClient.uploadMedia`.
   Тип события — литерал `"m.sticker"` (`.map()` из `MessageLikeEventType` даёт `"Sticker"`, нельзя).
@@ -202,10 +205,13 @@ We wrap the `matrix-rust-sdk` to isolate the UI from the underlying SDK.
   строка `TimelineEventKind::PlainText { event: RawEvent { event_type: "m.sticker" } }` в логах —
   это `LatestEvent`, который специально хранит сырое событие, а не «тип не распознан». Нестабильный
   тип `org.matrix.msc3916.sticker` не понимает никто, отправлять только `m.sticker`.
-- **Импорт из Telegram (2026-10-04):** `.webp/.png/.gif/.zip` работают, `.tgs` импортируется как
-  статичный кадр. Анимация не показывается ни в animated WebP, ни в APNG — на прошивке системный
-  `ImageDecoder` отдаёт от них первый кадр, а `GifDecoder` Coil анимирует только GIF. Рабочий путь —
-  свой GIF-энкодер, он не написан. Подробности и грабли — в `../FORK-NOTES.md`.
+- **Импорт из Telegram (2026-10-04, баги `.tgs` закрыты 2026-10-11):** `.webp/.png/.gif/.zip`
+  работают, `.tgs` импортируется как анимированный GIF. Две обязательные ловушки в рендере:
+  `GifEncoder.addFrame()` обязан **копировать** массив (вызывающий код переиспользует один буфер),
+  а `LottieComposition.duration` брать **без ×1000** — он уже в миллисекундах. Нарушение любого из
+  двух даёт валидный неподвижный GIF. В лог импорта добавлено число уникальных кадров.
+- **Превью в списке чатов** для стикера — просто «Стикер» (`StickerContent.bestDescription` больше
+  не подставляется: `body` у `m.sticker` — техническое имя файла, было «Стикер: 66e3d191.gif»).
 - **Dev-сборка = debug-билд**: `ru.vavsta.messenger.debug`, лейбл «VaVsta Messenger DEV»,
   лента «DEV» (`x/ui/DevBuildRibbon.kt`), логи в logcat + TRACE только при `BuildConfig.DEBUG`.
   Сборка: `./gradlew :app:assembleGplayDebug -x :app:licenseeAndroidGplayDebug -x :app:copyGplayDebugLicenseeReportToAssets`.
