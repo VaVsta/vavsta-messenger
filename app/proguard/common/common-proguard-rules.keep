@@ -77,3 +77,8 @@
 
 # Rustls Platform Verifier
 -keep, includedescriptorclasses class org.rustls.platformverifier.** { *; }
+
+# webp-android (сборка animated WebP из кадров .tgs) ссылается на okhttp3.internal.Util —
+# такого класса в сборке нет, и R8 роняет релиз на «Missing classes detected».
+# Класс используется только в недостижимых ветках, поэтому достаточно -dontwarn.
+-dontwarn okhttp3.internal.Util
